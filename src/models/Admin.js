@@ -6,14 +6,14 @@ const adminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
     password: { type: String, required: true },
-    photo: { type: String }, // Admin Profile Photo
+    profilePhoto: { type: String }, // Admin Profile Photo
     role: { type: String, default: "ADMIN" },
 }, { timestamps: true });
 
 
 adminSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

@@ -2,6 +2,7 @@ const Package = require('../models/Package');
 const Transport = require('../models/Transport');
 const Review = require('../models/Review');
 const OwnerProfile = require('../models/OwnerProfile');
+const Admin = require('../models/Admin');
 
 
 const createPackage = async (req, res) => {
@@ -84,22 +85,29 @@ const deleteReview = async (req, res) => {
 
 const updateOwnerProfile = async (req, res) => {
     try {
-        const { name, photo, phone, instagram, description } = req.body;
-        
+        const { displayName, ownerImage, contactPhone, instagramHandle, description } = req.body;
+
+        // The Model expects: displayName, ownerImage, contactPhone, instagramHandle, description
+
         let profile = await OwnerProfile.findOne();
+
         if (profile) {
-            profile.name = name;
-            profile.photo = photo;
-            profile.phone = phone;
-            profile.instagram = instagram;
-            profile.description = description;
-            const updatedProfile = await profile.save();
-            res.json(updatedProfile);
+            // Update existing
+            profile.displayName = displayName || profile.displayName;
+            profile.ownerImage = ownerImage || profile.ownerImage;
+            profile.contactPhone = contactPhone || profile.contactPhone;
+            profile.instagramHandle = instagramHandle || profile.instagramHandle;
+            profile.description = description || profile.description;
+            await profile.save();
         } else {
-            const newProfile = new OwnerProfile({ name, photo, phone, instagram, description });
-            const savedProfile = await newProfile.save();
-            res.json(savedProfile);
+            // Create new
+            profile = new OwnerProfile({
+                displayName, ownerImage, contactPhone, instagramHandle, description
+            });
+            await profile.save();
         }
+
+        res.json(profile);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -108,14 +116,16 @@ const updateOwnerProfile = async (req, res) => {
 
 const applyOffer = async (req, res) => {
     try {
-        const { target, packageIds, offer } = req.body;
-        
+        const { target, packageIds, offerText, offerPercent } = req.body;
 
         let updateQuery = {};
-        if (offer) {
-            updateQuery = { $set: { offer } };
+        if (offerPercent > 0) {
+            updateQuery = { $set: { offerText, offerPercent } };
         } else {
-            updateQuery = { $unset: { offer: "" } };
+            updateQuery = {
+                $unset: { offerText: "", offerPercent: "" },
+                $set: { offerPercent: 0 }
+            };
         }
 
         if (target === 'ALL') {
@@ -132,10 +142,28 @@ const applyOffer = async (req, res) => {
     }
 };
 
+const getAdmins = async (req, res) => {
+    try {
+        const admins = await Admin.find({}).select('-password').sort({ createdAt: -1 });
+        res.json(admins);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const deleteAdmin = async (req, res) => {
+    try {
+        await Admin.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Admin removed' });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 const getDashboardData = async (req, res) => {
     try {
-        
+
         const packages = await Package.find({}).sort({ createdAt: -1 });
         const transports = await Transport.find({}).sort({ createdAt: -1 });
         const reviews = await Review.find({}).sort({ createdAt: -1 });
@@ -159,5 +187,6 @@ module.exports = {
     createReview, deleteReview,
     updateOwnerProfile,
     applyOffer,
+    getAdmins, deleteAdmin,
     getDashboardData
 };

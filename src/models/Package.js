@@ -8,18 +8,17 @@ const packageSchema = new mongoose.Schema({
     },
     title: { type: String, required: true },
     destination: { type: String, required: true },
-    duration: { type: String }, 
-    startingPrice: { type: Number },
+    duration: { type: String },
+    startingPrice: { type: Number, required: true },
     minPeople: { type: Number },
     description: { type: String },
-    itinerary: { type: String }, 
-    inclusions: { type: String }, 
-    exclusions: { type: String }, 
-    images: [{ type: String }], 
-    offer: {
-        text: { type: String }, 
-        percentage: { type: Number } 
-    },
+    itinerary: { type: String },
+    inclusions: { type: String },
+    exclusions: { type: String },
+    image: { type: String }, // Main image
+    images: [{ type: String }], // Optional additional images
+    offerText: { type: String },
+    offerPercent: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 

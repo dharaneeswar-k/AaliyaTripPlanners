@@ -1,0 +1,28 @@
+Starting Audit...
+Total Packages: 4
+Active Packages: 4
+First Package: {
+  "offer": {
+    "text": "Fire",
+    "percentage": 10
+  },
+  "_id": "694688d1a7863e969b7db0a0",
+  "packageType": "COUPLE",
+  "title": "Romantic Ooty Honeymoon",
+  "destination": "Ooty",
+  "duration": "3 Days / 2 Nights",
+  "startingPrice": 12500,
+  "minPeople": 2,
+  "description": "Experience the queen of hills with your loved one. Includes candle light dinner and flower decoration.",
+  "itinerary": "Day 1: Arrival & Check-in, Botanical Garden.\nDay 2: Pykara Lake & Shooting Spot.\nDay 3: Tea Museum & Departure.",
+  "inclusions": "Accommodation in 3 Star Hotel\nBreakfast & Dinner\nPrivate Cab for Sightseeing\nHoneymoon Cake",
+  "exclusions": "Lunch\nEntry Fees\nPersonal Expenses",
+  "images": [
+    "/images/sheep.jpg"
+  ],
+  "isActive": true,
+  "__v": 0,
+  "createdAt": "2025-12-20T11:30:25.105Z",
+  "updatedAt": "2025-12-20T13:39:35.267Z"
+}
+Total Reviews: 0

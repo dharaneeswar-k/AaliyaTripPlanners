@@ -30,35 +30,6 @@ const loginAdmin = async (req, res) => {
 };
 
 
-const registerAdmin = async (req, res) => {
-    const { name, email, phone, password } = req.body;
-
-    const adminExists = await Admin.findOne({ email });
-
-    if (adminExists) {
-        return res.status(400).json({ message: 'Admin already exists' });
-    }
-
-    const admin = await Admin.create({
-        name,
-        email,
-        phone,
-        password,
-    });
-
-    if (admin) {
-        res.status(201).json({
-            _id: admin._id,
-            name: admin.name,
-            email: admin.email,
-            token: generateToken(admin._id),
-        });
-    } else {
-        res.status(400).json({ message: 'Invalid admin data' });
-    }
-};
-
-
 const createAdmin = async (req, res) => {
     try {
         const { name, email, phone, password, photo } = req.body;
@@ -73,7 +44,7 @@ const createAdmin = async (req, res) => {
             email,
             phone,
             password,
-            photo
+            profilePhoto: photo
         });
 
 
@@ -88,4 +59,7 @@ const createAdmin = async (req, res) => {
     }
 }
 
-module.exports = { loginAdmin, registerAdmin, createAdmin };
+module.exports = {
+    loginAdmin,
+    createAdmin
+};

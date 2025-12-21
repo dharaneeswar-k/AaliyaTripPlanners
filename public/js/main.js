@@ -62,6 +62,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 600);
         });
     }
+    // Fix for Back Button Cache (bfcache)
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+            document.querySelectorAll('.package-card').forEach(card => {
+                card.classList.remove('animating');
+            });
+        }
+    });
 });
 
 
@@ -168,11 +176,18 @@ function createPackageCard(pkg) {
     let badgeHtml = '';
     let priceValue = `<span class="price-tag">₹${pkg.startingPrice || 'On Request'}</span>`;
 
-    if (pkg.offer && pkg.offer.text) {
-        badgeHtml = `<div class="listing-card-badge"><i class="fas fa-certificate me-1"></i>${pkg.offer.text}</div>`;
+    const offerText = pkg.offerText || (pkg.offer && pkg.offer.text) || '';
+    const offerPercent = pkg.offerPercent || (pkg.offer && pkg.offer.percentage) || 0;
 
-        if (pkg.startingPrice && pkg.offer.percentage) {
-            const discountedPrice = Math.round(pkg.startingPrice * (1 - pkg.offer.percentage / 100));
+    if (offerText || offerPercent > 0) {
+        if (offerText) {
+            badgeHtml = `<div class="listing-card-badge"><i class="fas fa-certificate me-1"></i>${offerText}</div>`;
+        } else if (offerPercent > 0) {
+            badgeHtml = `<div class="listing-card-badge"><i class="fas fa-certificate me-1"></i>${offerPercent}% OFF</div>`;
+        }
+
+        if (pkg.startingPrice && offerPercent > 0) {
+            const discountedPrice = Math.round(pkg.startingPrice * (1 - offerPercent / 100));
             priceValue = `
                 <div class="d-flex flex-column text-end">
                     <span class="text-muted text-decoration-line-through small" style="font-size: 0.8rem;">₹${pkg.startingPrice}</span>
@@ -261,76 +276,72 @@ function renderReviews(reviews) {
     if (!container) return;
     container.innerHTML = '';
 
-    reviews.forEach(review => {
-        const stars = '<i class="fas fa-star text-warning"></i>'.repeat(Math.round(review.rating));
-        const photo = review.customerPhoto ?
-            `<img src="${review.customerPhoto}" class="rounded-circle mb-3 border border-3 border-white shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">` :
-            `<div class="rounded-circle mb-3 bg-secondary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px; margin: 0 auto; font-size: 1.5rem;">${review.name.charAt(0)}</div>`;
-
-        const cardHtml = `
-            <div class="swiper-slide h-auto">
-                <div class="card border-0 shadow-sm h-100 p-4 text-center">
-                    <div class="mt-n5 mb-3">
-                        ${photo}
-                    </div>
-                    <div class="mb-3">
-                        ${stars}
-                    </div>
-                    <p class="card-text text-muted fst-italic">"${review.comment}"</p>
-                    <h6 class="fw-bold mt-auto">- ${review.name}</h6>
-                </div>
-            </div>
-        `;
-        container.innerHTML += cardHtml;
-    });
-
     if (reviews.length === 0) {
-        container.innerHTML = '<div class="swiper-slide"><p class="text-muted">No reviews yet.</p></div>';
-    } else {
-
-        new Swiper(".reviewSwiper", {
-            slidesPerView: 1,
-            spaceBetween: 30,
-            centeredSlides: true,
-            loop: true,
-            autoplay: {
-                delay: 3000,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true,
-            },
-            breakpoints: {
-                0: {
-                    slidesPerView: 1.2,
-                    spaceBetween: 20,
-                    effect: 'coverflow',
-                    coverflowEffect: {
-                        rotate: 0,
-                        stretch: 0,
-                        depth: 100,
-                        modifier: 1,
-                        slideShadows: false,
-                    },
-                },
-                576: {
-                    slidesPerView: 2,
-                    spaceBetween: 20,
-                    centeredSlides: false,
-                    effect: 'slide',
-                },
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 30,
-                    centeredSlides: false,
-                    effect: 'slide',
-                },
-            },
-        });
+        container.innerHTML = '<div class="swiper-slide"><div class="review-card"><p class="text-center text-muted">No reviews yet.</p></div></div>';
+        return;
     }
 
-    // Package Swiper removed - Replaced with Bento Grid Layout
+    reviews.forEach(review => {
+        const stars = '<i class="fas fa-star"></i>'.repeat(Math.round(review.rating));
+        const name = review.customerName || 'Happy Customer';
+        const photo = review.customerPhoto ? review.customerPhoto : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+
+        // Use user's requested HTML structure
+        const slide = document.createElement("div");
+        slide.className = "swiper-slide";
+        slide.innerHTML = `
+          <div class="review-card">
+            <i class="fas fa-quote-left quote-icon"></i>
+
+            <p class="review-content">
+              ${review.comment || 'No comment provided.'}
+            </p>
+
+            <div class="review-footer">
+              <img src="${photo}" class="reviewer-img" alt="${name}" />
+              <div class="reviewer-info">
+                <h5>${name}</h5>
+                <div class="stars">
+                  ${stars}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(slide);
+    });
+
+    // Initialize Swiper with User's Config
+    new Swiper(".reviewSwiper", {
+        loop: true,
+        grabCursor: true,
+        centeredSlides: false,
+
+        autoplay: {
+            delay: 4000,
+            disableOnInteraction: false,
+        },
+
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+
+        breakpoints: {
+            0: {
+                slidesPerView: 1,
+                spaceBetween: 16,
+            },
+            768: {
+                slidesPerView: 2,
+                spaceBetween: 20,
+            },
+            1024: {
+                slidesPerView: 3,
+                spaceBetween: 24,
+            },
+        },
+    });
 }
 
 function renderOwnerProfile(profile) {
@@ -338,21 +349,27 @@ function renderOwnerProfile(profile) {
     const nameEl = document.getElementById('owner-name');
     if (!nameEl) return;
 
-    nameEl.innerText = profile.name;
-    document.getElementById('owner-desc').innerText = profile.description;
-    if (profile.photo) document.getElementById('owner-photo').src = profile.photo;
+    nameEl.innerText = profile.displayName || profile.name || 'Travel Expert';
+    document.getElementById('owner-desc').innerText = profile.description || '';
 
+    if (profile.ownerImage || profile.photo) {
+        document.getElementById('owner-photo').src = profile.ownerImage || profile.photo;
+    }
 
     const instaBtn = document.getElementById('owner-insta');
-    if (profile.instagram) {
-        instaBtn.href = profile.instagram.startsWith('http') ? profile.instagram : `https://instagram.com/${profile.instagram.replace('@', '')}`;
+    const instaHandle = profile.instagramHandle || profile.instagram;
+
+    if (instaHandle) {
+        instaBtn.href = instaHandle.startsWith('http') ? instaHandle : `https://instagram.com/${instaHandle.replace('@', '')}`;
     } else {
         instaBtn.style.display = 'none';
     }
 
     const phoneBtn = document.getElementById('owner-phone');
-    if (profile.phone) {
-        phoneBtn.href = `tel:${profile.phone}`;
+    const phoneVal = profile.contactPhone || profile.phone;
+
+    if (phoneVal) {
+        phoneBtn.href = `tel:${phoneVal}`;
     } else {
         phoneBtn.style.display = 'none';
     }
@@ -424,18 +441,28 @@ window.openPackageModal = (id, title, type, destination = '') => {
         if (destination) destInput.value = destination;
 
 
-        document.getElementById('pkg-people-group').style.display = 'none';
-        document.getElementById('pkg-people-input').removeAttribute('required');
-        document.getElementById('pkg-people-input').value = 2;
+        const peopleGroup = document.getElementById('pkg-people-group');
+        const peopleInput = document.getElementById('pkg-people-input');
+
+        if (peopleGroup) peopleGroup.style.display = 'none';
+        if (peopleInput) {
+            peopleInput.removeAttribute('required');
+            peopleInput.value = 2;
+        }
 
     } else {
         document.querySelector('input[name="enquiryType"]').value = 'COMMON_PACKAGE';
         document.getElementById('modal-package-type').value = 'COMMON';
 
 
-        document.getElementById('pkg-people-group').style.display = 'block';
-        document.getElementById('pkg-people-input').setAttribute('required', 'true');
-        document.getElementById('pkg-people-input').value = '';
+        const peopleGroup = document.getElementById('pkg-people-group');
+        const peopleInput = document.getElementById('pkg-people-input');
+
+        if (peopleGroup) peopleGroup.style.display = 'block';
+        if (peopleInput) {
+            peopleInput.setAttribute('required', 'true');
+            peopleInput.value = '';
+        }
 
         const destGroup = document.getElementById('pkg-destination-group');
         const destInput = destGroup.querySelector('input');
@@ -470,6 +497,27 @@ function setupEnquiryForms() {
             e.preventDefault();
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+
+            // Location Validation
+            const allowedLocations = ['dindugul', 'dindigul', 'madurai'];
+
+            if (data.pickupLocation) {
+                const pickup = data.pickupLocation.toLowerCase().trim();
+                const validPickup = allowedLocations.some(loc => pickup.includes(loc));
+                if (!validPickup) {
+                    alert('Pickup is available only from Dindigul and Madurai.');
+                    return; // Stop submission
+                }
+            }
+
+            if (data.dropLocation) {
+                const drop = data.dropLocation.toLowerCase().trim();
+                const validDrop = allowedLocations.some(loc => drop.includes(loc));
+                if (!validDrop) {
+                    alert('Drop is available only to Dindigul and Madurai regions.');
+                    return; // Stop submission
+                }
+            }
 
 
 

@@ -13,6 +13,39 @@
         content="Plan your perfect getaway with Aaliya Trip Planners. Best prices, premium service, and unforgettable memories.">
     <meta property="og:image" content="https://placehold.co/1200x630/0c4e5a/ffffff?text=Aaliya+Trips">
     <title>Aaliya Trip Planners | Best Travel Agency for Custom Tours</title>
+    <!-- Review Details Modal -->
+    <div class="modal fade" id="reviewDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header border-0 bg-primary text-white p-4">
+                    <div class="d-flex align-items-center">
+                        <img id="modalReviewImage" src="" alt="Customer"
+                            class="rounded-circle border border-2 border-white me-3"
+                            style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="modalReviewName">Customer Name</h5>
+                            <div class="text-warning small" id="modalReviewRating">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                    class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white align-self-start" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <i class="fas fa-quote-left text-primary opacity-25 display-4 mb-3"></i>
+                    <p class="text-muted fs-5" id="modalReviewComment" style="line-height: 1.8;">Review content goes
+                        here...</p>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-secondary w-100 rounded-pill py-2"
+                        data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts -->
@@ -221,7 +254,7 @@
                     <div class="card border-0 shadow-sm h-100 service-card">
                         <div class="row g-0 h-100">
                             <div class="col-md-6">
-                                <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                <img src="images/toyota_innova.png"
                                     class="img-fluid rounded-start h-100 object-fit-cover" alt="Luxury Transport">
                             </div>
                             <div class="col-md-6 d-flex align-items-center">
@@ -269,13 +302,16 @@
     </section>
 
     <!-- Reviews Section -->
-    <section id="reviews" class="py-5 bg-light">
+    <section id="reviews" class="py-5">
         <div class="container text-center">
             <h2 class="fw-bold mb-5">What Our Customers Say</h2>
-            <div class="swiper reviewSwiper padding-bottom-50">
+
+            <div class="swiper reviewSwiper">
                 <div class="swiper-wrapper" id="reviews-container">
-                    <!-- Dynamic Reviews -->
+                    <!-- Dynamic Reviews will be injected here -->
                 </div>
+
+                <!-- Pagination -->
                 <div class="swiper-pagination"></div>
             </div>
         </div>
@@ -375,6 +411,16 @@
                             <label class="form-label">Preferred Destination <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="destination"
                                 placeholder="Where do you want to go?">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pickup Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="pickupLocation"
+                                placeholder="Enter Pickup City" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Drop Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="dropLocation" placeholder="Enter Drop City"
+                                required>
                         </div>
                         <div class="mb-3"><label class="form-label">Date of Travel <span
                                     class="text-danger">*</span></label><input type="date"

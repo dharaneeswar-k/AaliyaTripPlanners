@@ -7,6 +7,8 @@ const createEnquiry = async (req, res) => {
             packageType,
             packageId,
             transportId,
+            pickupLocation,
+            dropLocation,
             destination,
             duration,
             peopleCount,
@@ -21,12 +23,14 @@ const createEnquiry = async (req, res) => {
             packageType,
             packageId,
             transportId,
+            pickupLocation,
+            dropLocation,
             destination,
             duration,
             peopleCount,
             travelDate,
-            name,
-            phone,
+            customerName: name,
+            contact: phone,
             message
         });
 
@@ -53,18 +57,28 @@ const getEnquiries = async (req, res) => {
 const updateEnquiryStatus = async (req, res) => {
     try {
         const { status, notes } = req.body;
-        const enquiry = await Enquiry.findById(req.params.id);
 
-        if (enquiry) {
-            enquiry.status = status || enquiry.status;
-            enquiry.notes = notes || enquiry.notes;
-            const updatedEnquiry = await enquiry.save();
+        // Use findByIdAndUpdate to bypass full document validation (required: true checks)
+        // This allows updating status on legacy documents that might be missing customerName/contact
+        const updatedEnquiry = await Enquiry.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    ...(status && { status }),
+                    ...(notes && { notes })
+                }
+            },
+            { new: true, runValidators: false }
+        );
+
+        if (updatedEnquiry) {
             res.json(updatedEnquiry);
         } else {
             res.status(404).json({ message: 'Enquiry not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Update Error:', error);
+        res.status(500).json({ message: 'Server Error: ' + error.message });
     }
 };
 

@@ -6,20 +6,23 @@ const enquirySchema = new mongoose.Schema({
         required: true,
         enum: ['PACKAGE', 'ROOM', 'TRANSPORT', 'CUSTOM', 'COUPLE_PACKAGE', 'COMMON_PACKAGE']
     },
-    
-    packageType: { type: String }, 
+
+    packageType: { type: String },
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Package' },
 
-    
-    transportId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transport' }, 
 
-    
+    transportId: { type: mongoose.Schema.Types.ObjectId, ref: 'Transport' },
+
+    pickupLocation: { type: String },
+    dropLocation: { type: String },
+
+
     destination: { type: String },
     duration: { type: String },
     peopleCount: { type: Number },
     travelDate: { type: Date },
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
+    customerName: { type: String, required: true },
+    contact: { type: String, required: true },
     message: { type: String },
 
     status: {
@@ -27,7 +30,7 @@ const enquirySchema = new mongoose.Schema({
         default: 'PENDING',
         enum: ['PENDING', 'CONTACTED', 'CONVERTED', 'CLOSED']
     },
-    notes: { type: String } 
+    notes: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Enquiry', enquirySchema);

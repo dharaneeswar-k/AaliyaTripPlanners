@@ -1361,3 +1361,111 @@ section[id] {
     transform: translateY(20px);
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
+
+/* ================== PREMIUM REVIEW CARDS ================== */
+.review-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    min-height: 280px;
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.review-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    /* Prevent long words breaking layout */
+    word-break: break-word;
+}
+
+.swiper-slide {
+    height: auto;
+    display: flex;
+}
+
+.reviewSwiper {
+    padding-bottom: 60px;
+}
+
+/* Standard Swiper Slide */
+.reviewSwiper .swiper-slide {
+    height: auto;
+    display: flex;
+}
+
+/* Force Constraint on Card */
+.reviewSwiper .review-card {
+    width: 100%;
+    max-width: 100%;
+    /* Critical constraint */
+    flex: 1;
+    /* Fill the slide height */
+    overflow: hidden;
+    /* Prevent any bleed */
+}
+
+/* Ensure consistent alignment */
+.reviewSwiper .swiper-wrapper {
+    align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+    .reviewSwiper {
+        max-width: 1100px;
+        margin: auto;
+    }
+}
+
+.review-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+.reviewer-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reviewer-info h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--dark-text);
+}
+
+.reviewer-info .small {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 0.85rem;
+    display: flex;
+    gap: 2px;
+}
+
+.quote-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    opacity: 0.15;
+    margin-bottom: 1rem;
+}

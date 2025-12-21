@@ -7,6 +7,7 @@ const {
     createReview, deleteReview,
     updateOwnerProfile,
     applyOffer,
+    getAdmins, deleteAdmin,
     getDashboardData
 } = require('../controllers/adminController');
 const { createAdmin } = require('../controllers/authController');
@@ -15,6 +16,8 @@ const { getEnquiries, updateEnquiryStatus } = require('../controllers/enquiryCon
 
 
 router.post('/create-admin', protect, createAdmin);
+router.get('/admins', protect, getAdmins);
+router.delete('/admins/:id', protect, deleteAdmin);
 
 
 router.get('/enquiries', protect, getEnquiries);
