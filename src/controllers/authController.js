@@ -10,10 +10,8 @@ const generateToken = (id) => {
 
 const loginAdmin = async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const admin = await Admin.findOne({ email });
-
         if (admin && (await admin.matchPassword(password))) {
             res.json({
                 _id: admin._id,
@@ -29,16 +27,13 @@ const loginAdmin = async (req, res) => {
     }
 };
 
-
 const createAdmin = async (req, res) => {
     try {
         const { name, email, phone, password, photo } = req.body;
-
         const adminExists = await Admin.findOne({ email });
         if (adminExists) {
             return res.status(400).json({ message: 'Admin already exists' });
         }
-
         const admin = await Admin.create({
             name,
             email,
@@ -46,14 +41,11 @@ const createAdmin = async (req, res) => {
             password,
             profilePhoto: photo
         });
-
-
         res.status(201).json({
             _id: admin._id,
             name: admin.name,
             email: admin.email
         });
-
     } catch (error) {
         res.status(400).json({ message: 'Invalid admin data' });
     }

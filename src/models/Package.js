@@ -15,8 +15,8 @@ const packageSchema = new mongoose.Schema({
     itinerary: { type: String },
     inclusions: { type: String },
     exclusions: { type: String },
-    image: { type: String }, // Main image
-    images: [{ type: String }], // Optional additional images
+    image: { type: String },
+    images: [{ type: String }],
     offerText: { type: String },
     offerPercent: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true }

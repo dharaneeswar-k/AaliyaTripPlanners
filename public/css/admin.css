@@ -1,62 +1,28 @@
-/* =========================================
-   1. ROOT VARIABLES & THEME SETUP
-   ========================================= */
 :root {
-    /* Brand Colors - Premium Indigo/Slate Theme */
     --primary: #4f46e5;
-    /* Indigo 600 */
     --primary-dark: #4338ca;
-    /* Indigo 700 */
     --primary-light: #e0e7ff;
-    /* Indigo 100 */
-
     --secondary: #64748b;
-    /* Slate 500 */
-
-    /* Functional Colors */
     --success: #10b981;
-    /* Emerald 500 */
     --info: #0ea5e9;
-    /* Sky 500 */
     --warning: #f59e0b;
-    /* Amber 500 */
     --danger: #ef4444;
-    /* Red 500 */
     --dark: #0f172a;
-    /* Slate 900 */
-
-    /* Backgrounds */
     --bg-body: #f1f5f9;
-    /* Slate 100 */
     --bg-sidebar: #0f172a;
-    /* Slate 900 */
     --bg-card: #ffffff;
-
-    /* Text Colors */
     --text-main: #1e293b;
-    /* Slate 800 */
     --text-muted: #64748b;
-    /* Slate 500 */
     --text-light: #94a3b8;
-    /* Slate 400 */
-
-    /* Dimensions */
     --sidebar-width: 280px;
     --header-height: 70px;
-
-    /* Shadows - Soft & Diffused */
     --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-    /* Transitions */
     --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* =========================================
-   2. RESET & GLOBAL STYLES
-   ========================================= */
 body {
     background-color: var(--bg-body);
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
@@ -78,7 +44,6 @@ ul {
     margin: 0;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -97,7 +62,6 @@ ul {
     background: #94a3b8;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -114,15 +78,11 @@ ul {
     animation: fadeIn 0.4s ease-out forwards;
 }
 
-/* =========================================
-   3. LAYOUT STRUCTURE
-   ========================================= */
 .admin-wrapper {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
     width: var(--sidebar-width);
     background-color: var(--bg-sidebar);
@@ -187,7 +147,6 @@ ul {
     align-items: center;
     padding: 12px 16px;
     color: #94a3b8;
-    /* Slate 400 */
     border-radius: 10px;
     margin-bottom: 4px;
     font-weight: 500;
@@ -223,7 +182,6 @@ ul {
     font-weight: 600;
 }
 
-/* Main Content Area */
 .main-content {
     flex: 1;
     margin-left: var(--sidebar-width);
@@ -233,7 +191,6 @@ ul {
     transition: var(--transition-base);
 }
 
-/* Header/Topbar */
 .top-header {
     height: var(--header-height);
     background: rgba(255, 255, 255, 0.8);
@@ -286,9 +243,6 @@ ul {
     font-weight: 600;
 }
 
-/* =========================================
-   4. DASHBOARD COMPONENTS
-   ========================================= */
 .content-wrapper {
     padding: 32px;
 }
@@ -306,7 +260,6 @@ ul {
     margin-bottom: 32px;
 }
 
-/* Stats Cards */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -381,7 +334,6 @@ ul {
     font-weight: 500;
 }
 
-/* Charts & Main Cards */
 .card-premium {
     background: var(--bg-card);
     border-radius: 16px;
@@ -409,7 +361,6 @@ ul {
     padding: 24px;
 }
 
-/* Quick Actions Grid */
 .actions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -447,9 +398,6 @@ ul {
     box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
 }
 
-/* =========================================
-   5. TABLES & DATA
-   ========================================= */
 .table-container {
     overflow-x: auto;
 }
@@ -529,9 +477,6 @@ ul {
     border: 1px solid #dbeafe;
 }
 
-/* =========================================
-   6. FORMS & BUTTONS
-   ========================================= */
 .form-label {
     font-weight: 600;
     color: var(--text-main);
@@ -589,9 +534,6 @@ ul {
     border-color: var(--primary);
 }
 
-/* =========================================
-   7. MODALS & UTILS
-   ========================================= */
 .modal-content {
     border: none;
     border-radius: 16px;
@@ -631,9 +573,6 @@ ul {
     border-left-color: var(--danger);
 }
 
-/* =========================================
-   8. RESPONSIVE
-   ========================================= */
 @media (max-width: 991px) {
     :root {
         --sidebar-width: 0px;
@@ -659,7 +598,6 @@ ul {
         margin-right: 16px;
     }
 
-    /* Overlay handled by JS toggle */
     body.sidebar-open {
         overflow: hidden;
     }
@@ -678,12 +616,9 @@ ul {
 
 .sidebar-overlay {
     display: none;
-    /* Deprecated in favor of body::before or handled by JS for simpler toggle */
 }
 
 @media screen and (max-width: 768px) {
-
-    /* Responsive Tables - Card View */
     table,
     thead,
     tbody,
@@ -714,7 +649,6 @@ ul {
         border-bottom: 1px solid #f1f5f9;
         position: relative;
         padding: 12px 16px !important;
-        /* Override bootstrap */
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -732,15 +666,11 @@ ul {
         font-size: 0.85rem;
         text-transform: uppercase;
         margin-right: auto;
-        /* Push content to right */
         padding-right: 1rem;
         min-width: 100px;
         text-align: left;
     }
 
-    /* Adjust specific columns */
-
-    /* Mobile Package Card - Image Full Width */
     td[data-label="Image"] {
         justify-content: center;
         background: #f1f5f9;
@@ -748,7 +678,6 @@ ul {
         text-align: center;
         padding: 0 !important;
         height: 200px;
-        /* Fixed height for cover effect */
     }
 
     td[data-label="Image"]::before {
@@ -762,7 +691,6 @@ ul {
         object-fit: cover;
     }
 
-    /* Mobile Common Changes */
     td[data-label="Package Name"],
     td[data-label="Customer"] {
         flex-direction: column;
@@ -775,13 +703,8 @@ ul {
         margin-bottom: 6px;
     }
 
-    /* Enquiry Specific - Minimal */
-    /* Hide Status Label from normal position if we want to float it or make it minimal, 
-       but for now let's keep status. Hide Details. */
-
     td[data-label="Details"] {
         display: none;
-        /* Hide details on mobile as requested */
     }
 
     td[data-label="Date"] {
@@ -789,14 +712,12 @@ ul {
         width: 100%;
     }
 
-    /* Actions column */
     td[data-label="Actions"] {
         justify-content: flex-end;
         background: #f8fafc;
         padding: 12px !important;
     }
 
-    /* Charts */
     .chart-container {
         padding: 10px;
         overflow-x: hidden;

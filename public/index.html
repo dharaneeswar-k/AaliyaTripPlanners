@@ -13,7 +13,7 @@
         content="Plan your perfect getaway with Aaliya Trip Planners. Best prices, premium service, and unforgettable memories.">
     <meta property="og:image" content="https://placehold.co/1200x630/0c4e5a/ffffff?text=Aaliya+Trips">
     <title>Aaliya Trip Planners | Best Travel Agency for Custom Tours</title>
-    <!-- Review Details Modal -->
+
     <div class="modal fade" id="reviewDetailsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
@@ -46,21 +46,15 @@
         </div>
     </div>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-premium navbar-expand-lg navbar-dark fixed-top py-0">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">
@@ -83,40 +77,33 @@
         </div>
     </nav>
 
-    <!-- Hero Section with Carousel -->
     <header id="home" class="hero-section position-relative">
         <div id="heroCarousel" class="carousel slide carousel-fade h-100" data-bs-ride="carousel" data-bs-pause="false">
             <div class="carousel-inner h-100">
-                <!-- 1. Ooty Tea Gardens -->
                 <div class="carousel-item active h-100">
                     <img src="https://images.unsplash.com/photo-1596895111956-bf1cf0599ce5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
                         class="d-block w-100 h-100 object-fit-cover" alt="Ooty Tea Gardens">
                     <div class="hero-overlay"></div>
                 </div>
-                <!-- 2. Valparai Bison/Nature -->
                 <div class="carousel-item h-100">
                     <img src="images/valparai.jpg" class="d-block w-100 h-100 object-fit-cover"
                         alt="Valparai Nature Bison">
                     <div class="hero-overlay"></div>
                 </div>
-                <!-- 3. Epic Mountains (Misty) -->
                 <div class="carousel-item h-100">
                     <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
                         class="d-block w-100 h-100 object-fit-cover" alt="Misty Mountains">
                     <div class="hero-overlay"></div>
                 </div>
-                <!-- 4. Green Valley (4K) -->
                 <div class="carousel-item h-100">
                     <img src="images/sheep.jpg" class="d-block w-100 h-100 object-fit-cover" alt="Green Valley">
                     <div class="hero-overlay"></div>
                 </div>
-                <!-- Existing: Green Forest/Road -->
                 <div class="carousel-item h-100">
                     <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
                         class="d-block w-100 h-100 object-fit-cover" alt="Forest Road">
                     <div class="hero-overlay"></div>
                 </div>
-                <!-- Existing: Blue Sky & Hills -->
                 <div class="carousel-item h-100">
                     <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
                         class="d-block w-100 h-100 object-fit-cover" alt="Blue Sky Hills">
@@ -125,7 +112,6 @@
             </div>
         </div>
 
-        <!-- Hero Content Overlay -->
         <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-100"
             style="z-index: 2;">
             <div class="container">
@@ -144,7 +130,6 @@
         </div>
     </header>
 
-    <!-- Features Config -->
     <section class="py-5 bg-light reveal">
         <div class="container">
             <div class="row text-center g-4">
@@ -176,17 +161,14 @@
         </div>
     </section>
 
-    <!-- Packages Section -->
     <section id="packages" class="package-section py-5">
         <div class="container">
             <h2 class="section-title text-center fw-bold">Our Travel Packages</h2>
             <p class="section-subtitle text-center">Choose how you want to travel</p>
 
-            <!-- Package Grid (Bento Layout) -->
             <div class="package-grid">
-                <!-- Couple Package (Col 1) -->
                 <div class="package-item">
-                    <a href="couple.html" class="package-card h-100">
+                    <a href="couple.html" class="package-card">
                         <div class="card-bg couple-bg"></div>
                         <div class="card-content">
                             <h3>Couple</h3>
@@ -196,9 +178,8 @@
                     </a>
                 </div>
 
-                <!-- Common Package (Col 2) -->
                 <div class="package-item">
-                    <a href="common.html" class="package-card h-100">
+                    <a href="common.html" class="package-card">
                         <div class="card-bg common-bg"></div>
                         <div class="card-content">
                             <h3>Common</h3>
@@ -208,10 +189,8 @@
                     </a>
                 </div>
 
-                <!-- Custom Package (Row 2 - Spans Full) -->
                 <div class="package-item span-full">
-                    <div class="package-card highlight h-100" data-bs-toggle="modal"
-                        data-bs-target="#customPackageModal">
+                    <div class="package-card highlight" data-bs-toggle="modal" data-bs-target="#customPackageModal">
                         <div class="card-bg custom-bg"></div>
                         <div class="card-content">
                             <h3>Custom Trip</h3>
@@ -224,12 +203,10 @@
         </div>
     </section>
 
-    <!-- Services Section -->
     <section id="services" class="py-5 bg-light">
         <div class="container">
             <h2 class="fw-bold text-center mb-5">Other Services</h2>
             <div class="row g-4">
-                <!-- Rooms Only -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100 service-card">
                         <div class="row g-0 h-100">
@@ -249,7 +226,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Transport Only -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100 service-card">
                         <div class="row g-0 h-100">
@@ -270,12 +246,9 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </section>
 
-    <!-- Owner Profile Section -->
     <section class="py-5 bg-white">
         <div class="container">
             <div class="card border-0 shadow rounded-4 p-4">
@@ -301,25 +274,17 @@
         </div>
     </section>
 
-    <!-- Reviews Section -->
     <section id="reviews" class="py-5">
         <div class="container text-center">
             <h2 class="fw-bold mb-5">What Our Customers Say</h2>
 
             <div class="swiper reviewSwiper">
-                <div class="swiper-wrapper" id="reviews-container">
-                    <!-- Dynamic Reviews will be injected here -->
-                </div>
-
-                <!-- Pagination -->
+                <div class="swiper-wrapper" id="reviews-container"></div>
                 <div class="swiper-pagination"></div>
             </div>
         </div>
     </section>
 
-
-
-    <!-- Footer -->
     <footer class="bg-dark text-white py-5">
         <div class="container">
             <div class="row g-4">
@@ -357,8 +322,6 @@
         </div>
     </footer>
 
-    <!-- Modals -->
-    <!-- Room Enquiry Modal -->
     <div class="modal fade" id="roomEnquiryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -392,7 +355,6 @@
         </div>
     </div>
 
-    <!-- Package Enquiry Modal -->
     <div class="modal fade" id="packageEnquiryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -437,7 +399,6 @@
                                 class="form-control phone-input" name="phone" required pattern="[0-9]{10}"
                                 maxlength="10" placeholder="10-digit mobile number"></div>
 
-                        <!-- Pickup Notice Alert -->
                         <div class="alert alert-warning small mb-3">
                             <i class="fas fa-info-circle me-2"></i>Note: Pickup & Drop available only from Dindigul and
                             Madurai.
@@ -450,7 +411,6 @@
         </div>
     </div>
 
-    <!-- Custom Package Enquiry Modal -->
     <div class="modal fade" id="customPackageModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -503,7 +463,6 @@
         </div>
     </div>
 
-    <!-- Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content success-modal-content shadow-lg">
@@ -521,7 +480,6 @@
         </div>
     </div>
 
-    <!-- Floating Action Buttons -->
     <div class="floating-buttons">
         <a href="https://wa.me/918526630786?text=Hi%20Aaliya%20Trip%20Planners,%20I%20am%20interested%20in%20a%20trip!"
             class="float-btn whatsapp-float" target="_blank" title="Chat on WhatsApp">
@@ -532,7 +490,6 @@
         </a>
     </div>
 
-    <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="js/main.js"></script>

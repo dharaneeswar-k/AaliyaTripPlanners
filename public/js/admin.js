@@ -1,27 +1,19 @@
-/**
- * Admin Panel Logic - Premium Redesign
- * Handles Dashboard Data, content management, and interactions.
- */
-
-// Global State
 let allPackages = [];
 let allTransports = [];
 let allReviews = [];
 let allEnquiries = [];
 let ownerProfile = {};
-let charts = {}; // Store chart instances
+let charts = {};
 
-// Auth Token Key
 const TOKEN_KEY = 'adminToken';
 
-/* ================== AUTOMATIC INITIALIZATION ================== */
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     fetchDashboardData();
     fetchEnquiries();
     fetchAdmins();
+    initEnquiryFilters();
 
-    // Setup Global Modals
     window.pkgModal = new bootstrap.Modal(document.getElementById('packageModal'));
     window.transModal = new bootstrap.Modal(document.getElementById('transportModal'));
     window.revModal = new bootstrap.Modal(document.getElementById('reviewModal'));
@@ -29,12 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.enqModal = new bootstrap.Modal(document.getElementById('enquiryModal'));
     window.myProfModal = new bootstrap.Modal(document.getElementById('myProfileModal'));
 
-    // Hash Navigation
     const currentTab = window.location.hash.substring(1) || 'dashboard';
     showTab(currentTab);
 });
 
-/* ================== NAVIGATION & UI ================== */
 function toggleSidebar() {
     document.body.classList.toggle('sidebar-open');
     document.getElementById('sidebar').classList.toggle('show');
@@ -43,25 +33,21 @@ function toggleSidebar() {
 function showTab(tabId, event = null) {
     if (event) event.preventDefault();
 
-    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.style.display = 'none';
         tab.classList.remove('active');
     });
 
-    // Show selected tab
     const targetTab = document.getElementById(`tab-${tabId}`);
     if (targetTab) {
         targetTab.style.display = 'block';
         targetTab.classList.add('active', 'animate-fade-in');
     }
 
-    // Update active nav item
     document.querySelectorAll('.nav-link').forEach(item => {
         item.classList.remove('active');
     });
 
-    // Update active state
     if (event) {
         event.currentTarget.classList.add('active');
     } else {
@@ -69,22 +55,18 @@ function showTab(tabId, event = null) {
         if (navItem) navItem.classList.add('active');
     }
 
-    // Close sidebar on mobile
     if (window.innerWidth <= 991) {
         document.body.classList.remove('sidebar-open');
         document.getElementById('sidebar').classList.remove('show');
     }
 
-    // Update charts if showing analytics or dashboard
     if (tabId === 'dashboard' || tabId === 'analytics') {
-        setTimeout(updateCharts, 300); // Small delay for layout to settle
+        setTimeout(updateCharts, 300);
     }
 
     history.pushState(null, null, `#${tabId}`);
 }
 
-
-/* ================== AUTHENTICATION ================== */
 function checkAuth() {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
@@ -115,7 +97,6 @@ function getHeaders() {
     };
 }
 
-/* ================== DATA FETCHING & ANALYTICS ================== */
 async function fetchDashboardData() {
     try {
         const res = await fetch('/api/admin/dashboard-data', { headers: getHeaders() });
@@ -135,6 +116,7 @@ async function fetchDashboardData() {
         updateDashboardStats();
     } catch (err) {
         console.error('Error fetching dashboard data:', err);
+        showToast('Failed to load dashboard data. Check console.', 'error');
     }
 }
 
@@ -145,30 +127,25 @@ async function fetchEnquiries() {
         allEnquiries = data || [];
         renderEnquiries();
         updateDashboardStats();
-        initCharts(); // Initialize charts with real data
+        initCharts();
     } catch (err) {
-        console.error('Error fetching enquiries:', err);
+        // Error handling silently
     }
 }
 
 function updateDashboardStats() {
-    // Update Stats Cards
-    const pkgCount = document.getElementById('dash-pkg-count'); // Updated ID
+    const pkgCount = document.getElementById('dash-pkg-count');
     if (pkgCount) pkgCount.innerText = allPackages.length;
 
-    const enqCount = document.getElementById('dash-enq-count'); // Updated ID
+    const enqCount = document.getElementById('dash-enq-count');
     if (enqCount) enqCount.innerText = allEnquiries.length;
 
-    const transCount = document.getElementById('dash-trans-count'); // Updated ID
+    const transCount = document.getElementById('dash-trans-count');
     if (transCount) transCount.innerText = allTransports.length;
 
-    const ratingEl = document.getElementById('dash-rating'); // Updated ID
-    if (ratingEl && allReviews.length > 0) {
-        const avg = allReviews.reduce((acc, curr) => acc + curr.rating, 0) / allReviews.length;
-        ratingEl.innerText = avg.toFixed(1);
-    }
+    const reviewCountEl = document.getElementById('dash-review-count');
+    if (reviewCountEl) reviewCountEl.innerText = allReviews.length;
 
-    // Sidebar Badges
     const badgePkg = document.getElementById('stats-packages');
     if (badgePkg) badgePkg.innerText = allPackages.length;
 
@@ -177,10 +154,12 @@ function updateDashboardStats() {
 
     const badgeTrans = document.getElementById('stats-transports');
     if (badgeTrans) badgeTrans.innerText = allTransports.length;
+
+    const badgeReviews = document.getElementById('stats-reviews');
+    if (badgeReviews) badgeReviews.innerText = allReviews.length;
 }
 
 function processAnalyticsData() {
-    // 1. Process Enquiries by Month
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyCounts = new Array(12).fill(0);
 
@@ -191,14 +170,12 @@ function processAnalyticsData() {
         }
     });
 
-    // 2. Process Enquiries by Type
     const typeCounts = {};
     allEnquiries.forEach(enq => {
         const type = enq.enquiryType || 'General';
         typeCounts[type] = (typeCounts[type] || 0) + 1;
     });
 
-    // 3. Process Enquiries by Status
     const statusCounts = {};
     allEnquiries.forEach(enq => {
         const status = enq.status || 'PENDING';
@@ -211,7 +188,6 @@ function processAnalyticsData() {
 function initCharts() {
     const { monthlyCounts, typeCounts, statusCounts, months } = processAnalyticsData();
 
-    // 1. Enquiry Trend Chart (Area)
     if (document.querySelector("#enquiryTrendChart")) {
         const options1 = {
             series: [{ name: 'Enquiries', data: monthlyCounts }],
@@ -238,7 +214,6 @@ function initCharts() {
         charts.trend.render();
     }
 
-    // 2. Enquiry Type Chart (Donut)
     if (document.querySelector("#enquiryTypeChart")) {
         const options2 = {
             series: Object.values(typeCounts),
@@ -254,7 +229,6 @@ function initCharts() {
         charts.type.render();
     }
 
-    // 3. Enquiry Status Chart (Bar)
     if (document.querySelector("#enquiryStatusChart")) {
         const options3 = {
             series: [{ name: 'Count', data: Object.values(statusCounts) }],
@@ -272,12 +246,9 @@ function initCharts() {
 }
 
 function updateCharts() {
-    // Re-render logic can be simple re-init for now
     if (allEnquiries.length > 0) initCharts();
 }
 
-
-/* ================== PACKAGE MANAGEMENT ================== */
 function renderPackages() {
     const tbody = document.getElementById('packages-table-body');
     if (!tbody) return;
@@ -287,7 +258,6 @@ function renderPackages() {
         const offerText = (pkg.offer && pkg.offer.text) || pkg.offerText || '';
         const offerPercent = (pkg.offer && pkg.offer.percentage) || pkg.offerPercent || 0;
 
-        // Offer is active if percent > 0 OR there is text
         const hasOffer = offerPercent > 0 || (offerText && offerText.trim().length > 0);
 
         const imgUrl = pkg.images && pkg.images.length > 0 ? pkg.images[0] : 'https://placehold.co/60';
@@ -323,7 +293,7 @@ function openPackageModal(pkgId = null) {
     const form = document.getElementById('package-form');
     form.reset();
     document.getElementById('pkg-img-file-status').innerText = '';
-    document.getElementById('pkg-id').value = ''; // Ensure ID is clear
+    document.getElementById('pkg-id').value = '';
 
     if (pkgId) {
         const pkg = allPackages.find(p => p._id === pkgId);
@@ -347,8 +317,6 @@ function openPackageModal(pkgId = null) {
         const offerText = pkg.offerText || (pkg.offer && pkg.offer.text) || '';
         const offerPercent = pkg.offerPercent || (pkg.offer && pkg.offer.percentage) || '';
 
-        console.log('Editing Package:', { id: pkg._id, offerText, offerPercent, rawOffer: pkg.offer });
-
         document.getElementById('pkg-offer-text').value = offerText;
         document.getElementById('pkg-offer-percent').value = offerPercent;
     }
@@ -356,9 +324,138 @@ function openPackageModal(pkgId = null) {
     if (window.pkgModal) window.pkgModal.show();
 }
 
+function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('liveToast');
+    const toastBody = toastEl.querySelector('.toast-body');
+    const toast = new bootstrap.Toast(toastEl);
+
+    toastEl.className = `toast toast-custom ${type}`;
+    toastBody.innerText = message;
+    toast.show();
+}
+
+function showConfirmation(message, onConfirm) {
+    document.getElementById('confirm-msg').innerText = message;
+    const confirmBtn = document.getElementById('confirm-btn-action');
+
+    // Remove existing listeners to prevent stacking
+    const newBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+    newBtn.addEventListener('click', () => {
+        onConfirm();
+        window.confirmModal.hide();
+    });
+
+    window.confirmModal.show();
+}
+
+function uploadImage(input, targetId, statusId) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        if (file.size > 2 * 1024 * 1024) { // 2MB limit
+            showToast('File is too large. Max 2MB.', 'error');
+            input.value = '';
+            return;
+        }
+
+        reader.onload = function (e) {
+            document.getElementById(targetId).value = e.target.result;
+            document.getElementById(statusId).innerText = 'Image selected: ' + file.name;
+            document.getElementById(statusId).className = 'text-success small';
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+async function fetchAdmins() {
+    try {
+        const res = await fetch('/api/admin/admins', { headers: getHeaders() });
+        if (res.ok) {
+            const admins = await res.json();
+            renderAdmins(admins);
+        }
+    } catch (err) {
+        console.error("Failed to fetch admins");
+    }
+}
+
+function renderAdmins(admins) {
+    const list = document.getElementById('admins-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    admins.forEach(admin => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center py-3';
+        li.innerHTML = `
+            <div>
+                <div class="fw-bold text-dark">${admin.name}</div>
+                <div class="small text-muted">${admin.email}</div>
+            </div>
+            ${admin.email !== 'admin@example.com' ?
+                `<button class="btn btn-sm text-danger bg-light rounded-circle" onclick="deleteAdmin('${admin._id}')"><i class="fas fa-trash"></i></button>`
+                : '<span class="badge bg-secondary">System</span>'}
+        `;
+        list.appendChild(li);
+    });
+}
+
+document.getElementById('create-admin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const password = formData.get('password');
+    const confirm = document.getElementById('new-admin-pass-confirm').value;
+
+    if (password !== confirm) {
+        showToast('Passwords do not match', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/create-admin', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(Object.fromEntries(formData.entries()))
+        });
+
+        if (res.ok) {
+            showToast('New Admin Created', 'success');
+            e.target.reset();
+            fetchAdmins();
+        } else {
+            const data = await res.json();
+            showToast(data.message || 'Failed to create admin', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+});
+
+function deleteAdmin(id) {
+    showConfirmation('Delete this admin user?', async () => {
+        try {
+            const res = await fetch(`/api/admin/admins/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (res.ok) {
+                fetchAdmins();
+                showToast('Admin removed', 'success');
+            } else {
+                showToast('Failed to remove admin', 'error');
+            }
+        } catch (err) {
+            showToast('Error', 'error');
+        }
+    });
+}
+
 document.getElementById('package-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('Package form submitted');
 
     try {
         const formData = new FormData(e.target);
@@ -386,12 +483,9 @@ document.getElementById('package-form').addEventListener('submit', async (e) => 
         const offerText = formData.get('offerText');
         const offerPercentStr = formData.get('offerPercent');
 
-        console.log('Offer Inputs:', { offerText, offerPercentStr });
-
         const offerPercentVal = offerPercentStr ? parseFloat(offerPercentStr) : 0;
         const offerTextVal = offerText ? offerText.trim() : '';
 
-        // Determine if we are setting or clearing an offer
         if (offerTextVal.length > 0 || offerPercentVal > 0) {
             payload.offerText = offerTextVal;
             payload.offerPercent = offerPercentVal;
@@ -399,8 +493,6 @@ document.getElementById('package-form').addEventListener('submit', async (e) => 
             payload.offerText = '';
             payload.offerPercent = 0;
         }
-
-        console.log('Sending payload:', payload);
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `/api/admin/packages/${id}` : '/api/admin/packages';
@@ -417,11 +509,9 @@ document.getElementById('package-form').addEventListener('submit', async (e) => 
             showToast(id ? 'Package Updated!' : 'Package Created!', 'success');
         } else {
             const err = await res.json();
-            console.error('Server error:', err);
             showToast('Error: ' + (err.message || 'Unknown error'), 'error');
         }
     } catch (error) {
-        console.error('Submission error:', error);
         showToast('Something went wrong: ' + error.message, 'error');
     }
 });
@@ -440,23 +530,82 @@ function deletePackage(id) {
                 showToast('Failed to delete package', 'error');
             }
         } catch (err) {
-            console.error(err);
             showToast('Error: ' + err.message, 'error');
         }
     });
 }
 
+let currentEnquiryFilter = {
+    search: '',
+    status: 'ALL'
+};
 
-/* ================== ENQUIRY MANAGEMENT ================== */
-function renderEnquiries() {
+function initEnquiryFilters() {
+    const searchInput = document.getElementById('enq-search');
+    const statusSelect = document.getElementById('enq-filter-status');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentEnquiryFilter.search = e.target.value.toLowerCase();
+            applyEnquiryFilters();
+        });
+    }
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', (e) => {
+            currentEnquiryFilter.status = e.target.value;
+            applyEnquiryFilters();
+        });
+    }
+}
+
+function applyEnquiryFilters() {
+    const filtered = allEnquiries.filter(enq => {
+        const matchesStatus = currentEnquiryFilter.status === 'ALL' || enq.status === currentEnquiryFilter.status;
+
+        const searchStr = (currentEnquiryFilter.search || '').trim();
+        const matchesSearch = !searchStr ||
+            (enq.customerName || '').toLowerCase().includes(searchStr) ||
+            (enq.name || '').toLowerCase().includes(searchStr) ||
+            (enq.contact || '').toLowerCase().includes(searchStr) ||
+            (enq.phone || '').toLowerCase().includes(searchStr);
+
+        return matchesStatus && matchesSearch;
+    });
+
+    renderEnquiries(filtered);
+}
+
+function renderEnquiries(enquiriesToRender = null) {
+    let list = enquiriesToRender;
+    if (!list) {
+        list = allEnquiries;
+        if (currentEnquiryFilter.status !== 'ALL' || currentEnquiryFilter.search !== '') {
+            list = allEnquiries.filter(enq => {
+                const matchesStatus = currentEnquiryFilter.status === 'ALL' || enq.status === currentEnquiryFilter.status;
+                const searchStr = currentEnquiryFilter.search;
+                const matchesSearch = !searchStr ||
+                    (enq.customerName || '').toLowerCase().includes(searchStr) ||
+                    (enq.name || '').toLowerCase().includes(searchStr) ||
+                    (enq.contact || '').toLowerCase().includes(searchStr) ||
+                    (enq.phone || '').toLowerCase().includes(searchStr);
+                return matchesStatus && matchesSearch;
+            });
+        }
+    }
+
     const tbody = document.getElementById('enquiries-table-body');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    // Sort by date desc
-    allEnquiries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    allEnquiries.forEach(enq => {
+    if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No enquiries found matching your filters.</td></tr>';
+        return;
+    }
+
+    list.forEach(enq => {
         let statusBadge = '';
         switch (enq.status) {
             case 'PENDING': statusBadge = '<span class="badge badge-custom badge-pending">Pending</span>'; break;
@@ -510,7 +659,6 @@ async function updateEnquiry(id, status) {
             showToast('Enquiry status updated', 'success');
         }
     } catch (err) {
-        console.error(err);
         showToast('Failed to update status', 'error');
     }
 }
@@ -523,7 +671,6 @@ function viewEnquiry(id) {
 
     currentEnquiryId = id;
 
-    // Populate Modal
     document.getElementById('enq-name').innerText = enq.customerName || enq.name || 'N/A';
     document.getElementById('enq-contact').innerText = enq.contact || enq.phone || 'N/A';
     const d = new Date(enq.createdAt);
@@ -531,7 +678,6 @@ function viewEnquiry(id) {
 
     document.getElementById('enq-type').innerText = enq.enquiryType || 'General';
     document.getElementById('enq-dest').innerText = enq.destination || '-';
-
 
     document.getElementById('enq-message').innerText = enq.message || 'No additional message provided.';
 
@@ -545,7 +691,47 @@ function updateEnquiryStatusFromModal(status) {
     }
 }
 
-/* ================== MY PROFILE ================== */
+function downloadEnquiriesCSV() {
+    const searchStr = currentEnquiryFilter.search;
+    const dataToExport = allEnquiries.filter(enq => {
+        const matchesStatus = currentEnquiryFilter.status === 'ALL' || enq.status === currentEnquiryFilter.status;
+        const matchesSearch = !searchStr ||
+            (enq.customerName || '').toLowerCase().includes(searchStr) ||
+            (enq.name || '').toLowerCase().includes(searchStr) ||
+            (enq.contact || '').toLowerCase().includes(searchStr) ||
+            (enq.phone || '').toLowerCase().includes(searchStr);
+        return matchesStatus && matchesSearch;
+    });
+
+    if (dataToExport.length === 0) {
+        showToast('No data to export', 'error');
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Status,Customer Name,Contact,Type,Destination,Message\n";
+
+    dataToExport.forEach(row => {
+        const d = new Date(row.createdAt);
+        const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+
+        const name = (row.customerName || row.name || '').replace(/"/g, '""');
+        const contact = (row.contact || row.phone || '').replace(/"/g, '""');
+        const msg = (row.message || '').replace(/"/g, '""').replace(/(\r\n|\n|\r)/gm, " ");
+
+        csvContent += `"${dateStr}","${row.status}","${name}","${contact}","${row.enquiryType}","${row.destination || ''}","${msg}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const filename = `enquiries_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 function openMyProfile(e) {
     if (e) e.preventDefault();
 
@@ -559,8 +745,6 @@ function openMyProfile(e) {
     window.myProfModal.show();
 }
 
-
-/* ================== TRANSPORT MANAGEMENT ================== */
 function renderTransports() {
     const grid = document.getElementById('transports-grid');
     if (!grid) return;
@@ -640,7 +824,6 @@ document.getElementById('transport-form').addEventListener('submit', async (e) =
             showToast('Operation failed', 'error');
         }
     } catch (err) {
-        console.error(err);
         showToast('Error: ' + err.message, 'error');
     }
 });
@@ -658,12 +841,12 @@ function deleteTransport(id) {
             } else {
                 showToast('Failed to delete vehicle', 'error');
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            // Error handling silently
+        }
     });
 }
 
-
-/* ================== REVIEW MANAGEMENT ================== */
 function renderReviews() {
     const grid = document.getElementById('reviews-grid');
     if (!grid) return;
@@ -681,15 +864,13 @@ function renderReviews() {
                     <div class="d-flex align-items-center">
                         <img src="${rev.customerPhoto || 'https://placehold.co/50'}" class="rounded-circle me-3" width="48" height="48" style="object-fit:cover">
                         <div>
-                            <h6 class="fw-bold mb-0 text-dark">${rev.customerName}</h6>
-                            <small class="text-warning">${stars.join('')}</small>
+                            <h6 class="fw-bold mb-0">${rev.customerName}</h6>
+                            <div class="small">${stars.join('')}</div>
                         </div>
                     </div>
-                    <button class="btn btn-outline-danger btn-sm rounded-circle border-0" style="width:32px;height:32px" onclick="deleteReview('${rev._id}')">
-                         <i class="fas fa-times"></i>
-                    </button>
+                    <button class="btn btn-icon-sm text-danger" onclick="deleteReview('${rev._id}')"><i class="fas fa-trash"></i></button>
                 </div>
-                <p class="text-muted small mb-0 fst-italic">"${rev.comment}"</p>
+                <p class="text-muted small fst-italic">"${rev.comment}"</p>
             </div>
         `;
         grid.appendChild(col);
@@ -698,7 +879,6 @@ function renderReviews() {
 
 function openReviewModal() {
     document.getElementById('review-form').reset();
-    document.getElementById('rev-img-file-status').innerText = '';
     window.revModal.show();
 }
 
@@ -713,18 +893,21 @@ document.getElementById('review-form').addEventListener('submit', async (e) => {
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
+
         if (res.ok) {
             window.revModal.hide();
             fetchDashboardData();
-            showToast('Review added successfully!', 'success');
+            showToast('Review added!', 'success');
         } else {
             showToast('Failed to add review', 'error');
         }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
 });
 
 function deleteReview(id) {
-    showConfirmation('Remove this review?', async () => {
+    showConfirmation('Delete this review?', async () => {
         try {
             const res = await fetch(`/api/admin/reviews/${id}`, {
                 method: 'DELETE',
@@ -732,23 +915,36 @@ function deleteReview(id) {
             });
             if (res.ok) {
                 fetchDashboardData();
-                showToast('Review removed', 'success');
-            } else {
-                showToast('Failed to remove review', 'error');
+                showToast('Review deleted!', 'success');
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            showToast('Error: ' + err.message, 'error');
+        }
     });
 }
 
-
-/* ================== PROFILE MANAGEMENT ================== */
 function renderProfile() {
-    if (!ownerProfile || !document.getElementById('prof-name')) return;
-    document.getElementById('prof-name').value = ownerProfile.displayName || '';
-    document.getElementById('prof-desc').value = ownerProfile.description || '';
-    document.getElementById('prof-phone').value = ownerProfile.contactPhone || '';
-    document.getElementById('prof-insta').value = ownerProfile.instagramHandle || '';
-    document.getElementById('prof-img').value = ownerProfile.ownerImage || '';
+    if (!ownerProfile) return;
+    const nameEl = document.getElementById('prof-name');
+    if (nameEl) nameEl.value = ownerProfile.displayName || '';
+
+    const phoneEl = document.getElementById('prof-phone');
+    if (phoneEl) phoneEl.value = ownerProfile.contactPhone || '';
+
+    const instaEl = document.getElementById('prof-insta');
+    if (instaEl) instaEl.value = ownerProfile.instagramHandle || '';
+
+    const descEl = document.getElementById('prof-desc');
+    if (descEl) descEl.value = ownerProfile.description || '';
+
+    const imgInput = document.getElementById('prof-img');
+    if (imgInput) imgInput.value = ownerProfile.ownerImage || '';
+
+    const preview = document.getElementById('prof-img-preview');
+    if (preview && ownerProfile.ownerImage) {
+        preview.src = ownerProfile.ownerImage;
+        preview.style.display = 'block';
+    }
 }
 
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
@@ -763,176 +959,14 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            showToast('Profile updated successfully!', 'success');
             fetchDashboardData();
+            showToast('Profile updated!', 'success');
         } else {
             showToast('Update failed', 'error');
         }
     } catch (err) {
-        console.error(err);
         showToast('Error: ' + err.message, 'error');
     }
 });
 
-/* ================== ADMIN MANAGEMENT ================== */
-let allAdmins = [];
 
-async function fetchAdmins() {
-    try {
-        const res = await fetch('/api/admin/admins', { headers: getHeaders() });
-        if (res.ok) {
-            allAdmins = await res.json();
-            renderAdmins();
-        }
-    } catch (err) { console.error(err); }
-}
-
-function renderAdmins() {
-    const list = document.getElementById('admins-list');
-    if (!list) return;
-    list.innerHTML = '';
-
-    allAdmins.forEach(admin => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center p-3 border-bottom';
-        li.innerHTML = `
-            <div class="d-flex align-items-center">
-                <img src="${admin.profilePhoto || 'https://placehold.co/40'}" class="rounded-circle me-3" width="40" height="40">
-                <div>
-                    <h6 class="mb-0 fw-bold">${admin.name}</h6>
-                    <small class="text-muted">${admin.email}</small>
-                </div>
-            </div>
-            ${admin.role !== 'SUPER_ADMIN' ?
-                `<button class="btn btn-sm btn-action text-danger" onclick="deleteAdminUser('${admin._id}')"><i class="fas fa-trash"></i></button>` : ''}
-        `;
-        list.appendChild(li);
-    });
-}
-
-function deleteAdminUser(id) {
-    showConfirmation('Remove this admin?', async () => {
-        try {
-            const res = await fetch(`/api/admin/admins/${id}`, {
-                method: 'DELETE',
-                headers: getHeaders()
-            });
-            if (res.ok) {
-                fetchAdmins();
-                showToast('Admin removed successfully', 'success');
-            } else {
-                showToast('Failed to remove admin', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showToast('Error: ' + err.message, 'error');
-        }
-    });
-}
-
-document.getElementById('create-admin-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const payload = Object.fromEntries(formData.entries());
-
-    const pass = document.getElementById('new-admin-pass').value;
-    const confirmPass = document.getElementById('new-admin-pass-confirm').value;
-
-    if (pass !== confirmPass) {
-        showToast('Passwords do not match!', 'error');
-        return;
-    }
-
-    try {
-        const res = await fetch('/api/admin/create-admin', {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            showToast('New Admin Created Successfully!', 'success');
-            e.target.reset();
-            fetchAdmins();
-        } else {
-            const err = await res.json();
-            showToast('Error: ' + err.message, 'error');
-        }
-    } catch (err) {
-        console.error(err);
-        showToast('An unexpected error occurred: ' + err.message, 'error');
-    }
-});
-
-/* ================== UTILS ================== */
-let confirmCallback = null;
-
-function showConfirmation(msg, action) {
-    document.getElementById('confirm-msg').innerText = msg;
-    confirmCallback = action;
-    window.confirmModal.show();
-}
-
-document.getElementById('confirm-btn-action').addEventListener('click', () => {
-    if (confirmCallback) confirmCallback();
-    window.confirmModal.hide();
-});
-
-// Toast Notification
-function showToast(message, type = 'success') {
-    const toastEl = document.getElementById('liveToast');
-    const toastBody = toastEl.querySelector('.toast-body');
-
-    toastBody.innerText = message;
-    toastEl.className = 'toast toast-custom align-items-center';
-
-    // Add specific class for border color logic in CSS
-    toastEl.classList.add(type);
-
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-    toast.show();
-}
-
-/* ================== FILE UPLOAD ================== */
-function uploadImage(inputElement, targetInputId, statusId) {
-    const file = inputElement.files[0];
-    if (!file) return;
-
-    if (file.size > 50 * 1024 * 1024) {
-        showToast('File too large (Max 50MB)', 'error');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const statusEl = document.getElementById(statusId);
-    if (statusEl) statusEl.innerText = "Uploading...";
-
-    fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.path) {
-                document.getElementById(targetInputId).value = data.path;
-                if (statusEl) {
-                    statusEl.innerText = "Uploaded!";
-                    statusEl.className = "text-success small";
-                }
-                showToast('Image uploaded successfully', 'success');
-            } else {
-                if (statusEl) {
-                    statusEl.innerText = "Failed";
-                    statusEl.className = "text-danger small";
-                }
-                showToast('Upload failed', 'error');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('Upload error', 'error');
-            if (statusEl) statusEl.innerText = "Error";
-        });
-}

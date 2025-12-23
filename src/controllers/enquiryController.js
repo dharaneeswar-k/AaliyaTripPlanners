@@ -57,9 +57,6 @@ const getEnquiries = async (req, res) => {
 const updateEnquiryStatus = async (req, res) => {
     try {
         const { status, notes } = req.body;
-
-        // Use findByIdAndUpdate to bypass full document validation (required: true checks)
-        // This allows updating status on legacy documents that might be missing customerName/contact
         const updatedEnquiry = await Enquiry.findByIdAndUpdate(
             req.params.id,
             {
@@ -68,7 +65,7 @@ const updateEnquiryStatus = async (req, res) => {
                     ...(notes && { notes })
                 }
             },
-            { new: true, runValidators: false }
+            { new: true, runValidators: true }
         );
 
         if (updatedEnquiry) {

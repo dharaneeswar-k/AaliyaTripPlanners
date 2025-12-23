@@ -4,7 +4,6 @@ const Review = require('../models/Review');
 const OwnerProfile = require('../models/OwnerProfile');
 const Admin = require('../models/Admin');
 
-
 const createPackage = async (req, res) => {
     try {
         const newPackage = new Package(req.body);
@@ -32,7 +31,6 @@ const deletePackage = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 const createTransport = async (req, res) => {
     try {
@@ -62,7 +60,6 @@ const deleteTransport = async (req, res) => {
     }
 };
 
-
 const createReview = async (req, res) => {
     try {
         const review = new Review(req.body);
@@ -82,17 +79,12 @@ const deleteReview = async (req, res) => {
     }
 };
 
-
 const updateOwnerProfile = async (req, res) => {
     try {
         const { displayName, ownerImage, contactPhone, instagramHandle, description } = req.body;
-
-        // The Model expects: displayName, ownerImage, contactPhone, instagramHandle, description
-
         let profile = await OwnerProfile.findOne();
 
         if (profile) {
-            // Update existing
             profile.displayName = displayName || profile.displayName;
             profile.ownerImage = ownerImage || profile.ownerImage;
             profile.contactPhone = contactPhone || profile.contactPhone;
@@ -100,24 +92,20 @@ const updateOwnerProfile = async (req, res) => {
             profile.description = description || profile.description;
             await profile.save();
         } else {
-            // Create new
             profile = new OwnerProfile({
                 displayName, ownerImage, contactPhone, instagramHandle, description
             });
             await profile.save();
         }
-
         res.json(profile);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
 
-
 const applyOffer = async (req, res) => {
     try {
         const { target, packageIds, offerText, offerPercent } = req.body;
-
         let updateQuery = {};
         if (offerPercent > 0) {
             updateQuery = { $set: { offerText, offerPercent } };
@@ -135,7 +123,6 @@ const applyOffer = async (req, res) => {
         } else {
             return res.status(400).json({ message: "Invalid target or no packages selected" });
         }
-
         res.json({ message: "Offers updated successfully" });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -160,10 +147,8 @@ const deleteAdmin = async (req, res) => {
     }
 };
 
-
 const getDashboardData = async (req, res) => {
     try {
-
         const packages = await Package.find({}).sort({ createdAt: -1 });
         const transports = await Transport.find({}).sort({ createdAt: -1 });
         const reviews = await Review.find({}).sort({ createdAt: -1 });

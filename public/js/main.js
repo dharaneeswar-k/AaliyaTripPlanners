@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-
     try {
         const response = await fetch('/api/public/data');
         const data = await response.json();
@@ -11,18 +10,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderReviews(data.reviews);
             renderOwnerProfile(data.ownerProfile);
         } else {
-            console.error('Failed to load data:', data.message);
+            console.error('Failed to fetch public data:', response.status, response.statusText);
         }
     } catch (error) {
-        console.error('Network error loading data:', error);
+        console.error('Network error fetching public data:', error);
     }
 
-
     setupEnquiryForms();
-
-
     setupGlobalValidation();
-
 
     const navbar = document.querySelector('.navbar-premium');
     if (navbar) {
@@ -35,23 +30,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-
     const urlParams = new URLSearchParams(window.location.search);
     const bookId = urlParams.get('bookPackageId');
     if (bookId && window.siteData && window.siteData.packages) {
         const pkg = window.siteData.packages.find(p => p._id === bookId);
         if (pkg) {
-
             setTimeout(() => {
                 openPackageModal(pkg._id, pkg.title, pkg.packageType, pkg.destination || pkg.title);
-
                 window.history.replaceState({}, document.title, window.location.pathname);
             }, 500);
         }
     }
 
-
-    // Couple Package Animation
     const coupleCard = document.querySelector('a[href="couple.html"]');
     if (coupleCard) {
         coupleCard.addEventListener('click', function (e) {
@@ -62,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 600);
         });
     }
-    // Fix for Back Button Cache (bfcache)
+
     window.addEventListener('pageshow', (event) => {
         if (event.persisted || window.performance && window.performance.navigation.type === 2) {
             document.querySelectorAll('.package-card').forEach(card => {
@@ -72,21 +62,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-
 function setupGlobalValidation() {
-
     const today = new Date().toISOString().split('T')[0];
     document.querySelectorAll('.date-picker').forEach(input => {
         input.setAttribute('min', today);
     });
 
-
     document.querySelectorAll('.phone-input').forEach(input => {
         input.addEventListener('input', (e) => {
-
             e.target.value = e.target.value.replace(/[^0-9]/g, '');
-
-
             if (e.target.value.length > 10) {
                 e.target.value = e.target.value.slice(0, 10);
             }
@@ -94,12 +78,9 @@ function setupGlobalValidation() {
     });
 }
 
-
-
 function renderPackages(packages) {
     const coupleContainer = document.getElementById('couple-packages-container');
     const commonContainer = document.getElementById('common-packages-container');
-
 
     if (coupleContainer) {
         coupleContainer.innerHTML = '';
@@ -120,7 +101,6 @@ function renderPackages(packages) {
         }
     }
 
-
     if (commonContainer) {
         commonContainer.innerHTML = '';
         const commonPackages = packages.filter(p => p.packageType === 'COMMON');
@@ -140,11 +120,9 @@ function renderPackages(packages) {
         }
     }
 
-
     const popDestContainer = document.getElementById('popular-destinations-container');
     if (popDestContainer) {
         popDestContainer.innerHTML = '';
-
         const popularPackages = packages.filter(p => p.packageType === 'COMMON').slice(0, 4);
 
         if (popularPackages.length === 0) {
@@ -152,8 +130,6 @@ function renderPackages(packages) {
         } else {
             popularPackages.forEach(pkg => {
                 const image = (pkg.images && pkg.images.length > 0) ? pkg.images[0] : 'https://placehold.co/400x500/e67e22/ffffff?text=Dest';
-
-
                 popDestContainer.innerHTML += `
                     <div class="col-6 col-md-3">
                         <div class="destination-card" onclick="openPackageModal('${pkg._id}', '${pkg.title}', 'COUPLE', '${pkg.destination || pkg.title}')">
@@ -172,7 +148,6 @@ function renderPackages(packages) {
 function createPackageCard(pkg) {
     const image = (pkg.images && pkg.images.length > 0) ? pkg.images[0] : 'https://placehold.co/400x300/e67e22/ffffff?text=Package';
 
-    // Badge Logic
     let badgeHtml = '';
     let priceValue = `<span class="price-tag">₹${pkg.startingPrice || 'On Request'}</span>`;
 
@@ -197,7 +172,6 @@ function createPackageCard(pkg) {
         }
     }
 
-    // Duration Label
     const durationHtml = pkg.duration ? `<div class="listing-card-label"><i class="fas fa-clock me-1"></i>${pkg.duration}</div>` : '';
 
     return `
@@ -286,7 +260,6 @@ function renderReviews(reviews) {
         const name = review.customerName || 'Happy Customer';
         const photo = review.customerPhoto ? review.customerPhoto : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
 
-        // Use user's requested HTML structure
         const slide = document.createElement("div");
         slide.className = "swiper-slide";
         slide.innerHTML = `
@@ -311,22 +284,18 @@ function renderReviews(reviews) {
         container.appendChild(slide);
     });
 
-    // Initialize Swiper with User's Config
     new Swiper(".reviewSwiper", {
         loop: true,
         grabCursor: true,
         centeredSlides: false,
-
         autoplay: {
             delay: 4000,
             disableOnInteraction: false,
         },
-
         pagination: {
             el: ".swiper-pagination",
             clickable: true,
         },
-
         breakpoints: {
             0: {
                 slidesPerView: 1,
@@ -375,28 +344,12 @@ function renderOwnerProfile(profile) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 window.openPackageDetailsModal = (id) => {
     const pkg = window.siteData.packages.find(p => p._id === id);
     if (!pkg) return;
 
     document.getElementById('detail-modal-title').innerText = pkg.title;
     document.getElementById('detail-modal-price').innerText = pkg.startingPrice ? `₹${pkg.startingPrice}` : 'Best Price';
-
 
     const durEl = document.getElementById('detail-modal-duration');
     if (pkg.duration) {
@@ -406,11 +359,9 @@ window.openPackageDetailsModal = (id) => {
         durEl.style.display = 'none';
     }
 
-
     document.getElementById('detail-modal-itinerary').innerText = pkg.itinerary || 'Contact us for detailed itinerary.';
     document.getElementById('detail-modal-inclusions').innerText = pkg.inclusions || 'Standard inclusions apply.';
     document.getElementById('detail-modal-exclusions').innerText = pkg.exclusions || 'Standard exclusions apply.';
-
 
     const bookBtn = document.getElementById('detail-modal-book-btn');
     bookBtn.onclick = () => {
@@ -421,25 +372,21 @@ window.openPackageDetailsModal = (id) => {
     new bootstrap.Modal(document.getElementById('packageDetailsModal')).show();
 };
 
-
 window.openPackageModal = (id, title, type, destination = '') => {
     document.getElementById('modal-package-id').value = id;
     document.getElementById('modal-package-title').innerText = title;
     document.getElementById('modal-package-type').value = type;
-
 
     document.querySelector('input[name="destination"]').value = destination;
 
     if (type === 'COUPLE') {
         document.querySelector('input[name="enquiryType"]').value = 'COUPLE_PACKAGE';
 
-
         const destGroup = document.getElementById('pkg-destination-group');
         destGroup.style.display = 'block';
         const destInput = destGroup.querySelector('input');
         destInput.setAttribute('required', 'true');
         if (destination) destInput.value = destination;
-
 
         const peopleGroup = document.getElementById('pkg-people-group');
         const peopleInput = document.getElementById('pkg-people-input');
@@ -453,7 +400,6 @@ window.openPackageModal = (id, title, type, destination = '') => {
     } else {
         document.querySelector('input[name="enquiryType"]').value = 'COMMON_PACKAGE';
         document.getElementById('modal-package-type').value = 'COMMON';
-
 
         const peopleGroup = document.getElementById('pkg-people-group');
         const peopleInput = document.getElementById('pkg-people-input');
@@ -488,7 +434,6 @@ window.openTransportModal = (id, name) => {
     new bootstrap.Modal(document.getElementById('transportEnquiryModal')).show();
 };
 
-
 function setupEnquiryForms() {
     const forms = document.querySelectorAll('form');
 
@@ -498,7 +443,6 @@ function setupEnquiryForms() {
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
-            // Location Validation
             const allowedLocations = ['dindugul', 'dindigul', 'madurai'];
 
             if (data.pickupLocation) {
@@ -506,7 +450,7 @@ function setupEnquiryForms() {
                 const validPickup = allowedLocations.some(loc => pickup.includes(loc));
                 if (!validPickup) {
                     alert('Pickup is available only from Dindigul and Madurai.');
-                    return; // Stop submission
+                    return;
                 }
             }
 
@@ -515,11 +459,9 @@ function setupEnquiryForms() {
                 const validDrop = allowedLocations.some(loc => drop.includes(loc));
                 if (!validDrop) {
                     alert('Drop is available only to Dindigul and Madurai regions.');
-                    return; // Stop submission
+                    return;
                 }
             }
-
-
 
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.innerText;
@@ -539,10 +481,7 @@ function setupEnquiryForms() {
                         if (modalInstance) modalInstance.hide();
                     });
 
-
                     form.reset();
-
-
 
                     setTimeout(() => {
                         const successModalEl = document.getElementById('successModal');
@@ -558,7 +497,6 @@ function setupEnquiryForms() {
                     alert('Something went wrong. Please try again.');
                 }
             } catch (error) {
-                console.error(error);
                 alert('Connection error. Please check your network.');
             } finally {
                 btn.innerText = originalText;
@@ -568,18 +506,13 @@ function setupEnquiryForms() {
     });
 }
 
-
 window.selectCategory = (targetId, card) => {
-
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
-
-
 
     const tabBtnId = targetId + '-tab';
     const tabBtn = document.getElementById(tabBtnId);
     if (tabBtn) {
-
         const clickEvent = new MouseEvent('click', {
             view: window,
             bubbles: true,

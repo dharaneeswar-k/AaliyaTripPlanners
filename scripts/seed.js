@@ -8,18 +8,15 @@ dotenv.config();
 const seedAdmin = async () => {
     try {
         await connectDB();
-
-        await Admin.deleteMany(); // Clear existing admins
-
+        await Admin.deleteMany();
         const admin = new Admin({
             name: 'Super Admin',
             email: 'admin@webnest.com',
             phone: '9999999999',
-            password: 'admin123' // Will be hashed by pre-save hook
+            password: 'admin123'
         });
-
         await admin.save();
-        console.log('Admin seeded successfully: admin@webnest.com / admin123');
+        console.log('Admin seeded successfully');
         process.exit();
     } catch (error) {
         console.error(error);

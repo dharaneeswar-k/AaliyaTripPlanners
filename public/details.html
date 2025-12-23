@@ -40,7 +40,6 @@
     </div>
 
     <div id="details-content" style="display: none;">
-        <!-- Header Image & Overlay -->
         <header id="pkg-header-bg" class="page-header">
             <div class="container">
                 <h1 class="text-white fw-bold mb-1" id="pkg-title">Package Title</h1>
@@ -50,8 +49,6 @@
         </header>
 
         <div class="container py-5">
-            <!-- Row content continues... -->
-            <!-- Left: Details -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                     <h4 class="fw-bold mb-3 text-primary">Overview</h4>
@@ -66,18 +63,13 @@
                 </div>
             </div>
 
-            <!-- Right: Inclusions/Action -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm p-4 rounded-4 position-sticky" style="top: 110px;">
                     <h5 class="fw-bold mb-3">What's Included</h5>
-                    <ul class="list-unstyled mb-4" id="pkg-inclusions">
-                        <!-- Populated JS -->
-                    </ul>
+                    <ul class="list-unstyled mb-4" id="pkg-inclusions"></ul>
 
                     <h5 class="fw-bold mb-3 text-danger">Exclusions</h5>
-                    <ul class="list-unstyled mb-4 text-muted small" id="pkg-exclusions">
-                        <!-- Populated JS -->
-                    </ul>
+                    <ul class="list-unstyled mb-4 text-muted small" id="pkg-exclusions"></ul>
 
                     <div class="d-grid gap-2">
                         <button id="book-btn" class="btn btn-primary rounded-pill py-3 fw-bold shadow">Book
@@ -92,7 +84,6 @@
     </div>
     </div>
 
-    <!-- Package Enquiry Modal -->
     <div class="modal fade" id="packageEnquiryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -150,7 +141,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
     <script>
-        // Inline script to fetch single package details
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
@@ -161,11 +151,6 @@
             }
 
             try {
-                // Reuse public api to get all data (since we don't have a single-fetch public endpoint yet, 
-                // and the data set is small enough)
-                // Or we could check window.siteData if main.js runs first.
-                // main.js fetches data async. Let's wait or re-fetch.
-
                 const res = await fetch('/api/public/data');
                 const data = await res.json();
 
@@ -186,10 +171,8 @@
                         document.getElementById('pkg-header-bg').style.backgroundImage = `url('${pkg.images[0]}')`;
                     }
 
-                    // Inclusions
                     const inclList = document.getElementById('pkg-inclusions');
                     if (pkg.inclusions) {
-                        // Split by newlines or comma? Usually multiline string
                         const items = pkg.inclusions.split('\n');
                         items.forEach(item => {
                             if (item.trim()) inclList.innerHTML += `<li class="mb-2"><i class="fas fa-check text-success me-2"></i>${item}</li>`;
@@ -198,7 +181,6 @@
                         inclList.innerHTML = '<li class="text-muted">Standard inclusions apply.</li>';
                     }
 
-                    // Exclusions
                     const exclList = document.getElementById('pkg-exclusions');
                     if (pkg.exclusions) {
                         const items = pkg.exclusions.split('\n');
@@ -207,7 +189,6 @@
                         });
                     }
 
-                    // Book Button
                     document.getElementById('book-btn').onclick = () => {
                         openPackageModal(pkg._id, pkg.title, pkg.packageType, pkg.destination);
                     };
@@ -218,7 +199,7 @@
                 }
 
             } catch (e) {
-                console.error(e);
+                // Error handling silently
             }
         });
     </script>

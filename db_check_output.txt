@@ -1,6 +1,0 @@
-Connecting to DB...
-Connected.
-Packages: 4
-Transports: 3
-Reviews: 0
-OwnerProfiles: 1

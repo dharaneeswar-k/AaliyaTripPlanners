@@ -44,7 +44,6 @@
     <div class="container py-5 section-overlap" style="min-height: 60vh;">
         <div id="transports-list">
             <div class="row g-4" id="transport-container">
-                <!-- Populated by JS -->
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -54,7 +53,6 @@
         </div>
     </div>
 
-    <!-- Transport Enquiry Modal -->
     <div class="modal fade" id="transportEnquiryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -66,7 +64,6 @@
                     <form class="general-enquiry-form">
                         <input type="hidden" name="enquiryType" value="TRANSPORT">
                         <input type="hidden" name="packageId" id="modal-transport-id">
-                        <!-- abusing packageId field for transport ID -->
                         <p class="fw-bold" id="modal-transport-name"></p>
 
                         <div class="mb-3">

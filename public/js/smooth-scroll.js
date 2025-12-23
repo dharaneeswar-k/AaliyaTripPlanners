@@ -1,10 +1,6 @@
-
 document.addEventListener('DOMContentLoaded', function () {
-    
     const navbarLinks = document.querySelectorAll('.navbar-nav .nav-link[href^="#"]');
 
-    
-    
     function smoothScroll(targetId, offset = 0) {
         const targetElement = document.querySelector(targetId);
         if (!targetElement) return;
@@ -14,14 +10,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const offsetPosition = targetPosition - navbarHeight - offset;
         const startPosition = window.pageYOffset;
         const distance = offsetPosition - startPosition;
-        const duration = 600; 
+        const duration = 600;
         let start = null;
 
         function step(timestamp) {
             if (!start) start = timestamp;
             const progress = timestamp - start;
 
-            
             const ease = (t) => 1 - Math.pow(1 - t, 4);
 
             const position = startPosition + (distance * ease(Math.min(progress / duration, 1)));
@@ -31,9 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (progress < duration) {
                 window.requestAnimationFrame(step);
             } else {
-                
                 window.scrollTo(0, offsetPosition);
-                
                 if (history.pushState) {
                     history.pushState(null, null, targetId);
                 }
@@ -43,20 +36,17 @@ document.addEventListener('DOMContentLoaded', function () {
         window.requestAnimationFrame(step);
     }
 
-    
     navbarLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
             const href = this.getAttribute('href');
             if (href === '#') return;
 
-            
             const navbarCollapse = document.getElementById('navbarNav');
             if (navbarCollapse && navbarCollapse.classList.contains('show')) {
                 new bootstrap.Collapse(navbarCollapse).hide();
             }
 
-            
             navbarLinks.forEach(item => item.classList.remove('active'));
             this.classList.add('active');
 
@@ -64,13 +54,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    
-    
     const sections = document.querySelectorAll('section[id], header[id]');
 
     const activeLinkObserverOptions = {
         root: null,
-        rootMargin: '-50% 0px -50% 0px', 
+        rootMargin: '-50% 0px -50% 0px',
         threshold: 0
     };
 
@@ -79,10 +67,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (entry.isIntersecting) {
                 const id = entry.target.getAttribute('id');
 
-                
                 navbarLinks.forEach(link => link.classList.remove('active'));
 
-                
                 const active = document.querySelector(`.navbar-nav .nav-link[href="#${id}"]`);
                 if (active) {
                     active.classList.add('active');
@@ -96,9 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
         activeLinkObserver.observe(section);
     });
 
-    
     const observerOptions = {
-        threshold: 0.15, 
+        threshold: 0.15,
         rootMargin: "0px 0px -50px 0px"
     };
 
@@ -106,16 +91,14 @@ document.addEventListener('DOMContentLoaded', function () {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('active');
-                observer.unobserve(entry.target); 
+                observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    
     const navbarNav = document.querySelector('.navbar-nav');
     let pillTracker = document.querySelector('.nav-pill-tracker');
 
-    
     if (navbarNav && !pillTracker) {
         pillTracker = document.createElement('div');
         pillTracker.classList.add('nav-pill-tracker');
@@ -125,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function movePillTo(element) {
         if (!element || !pillTracker) return;
 
-        
         if (window.innerWidth < 992) {
             pillTracker.style.opacity = '0';
             return;
@@ -133,13 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const width = element.offsetWidth;
         const left = element.offsetLeft;
-        const height = element.offsetHeight;
-
-        
 
         pillTracker.style.width = `${width}px`;
         pillTracker.style.left = `${left}px`;
-        
+
         pillTracker.style.opacity = '1';
     }
 
@@ -152,7 +131,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    
     navbarLinks.forEach(link => {
         link.addEventListener('mouseenter', (e) => {
             movePillTo(e.target);
@@ -165,9 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    
     window.addEventListener('resize', resetPillToActive);
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 });
-

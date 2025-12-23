@@ -5,6 +5,7 @@ const Package = require('./src/models/Package');
 const Transport = require('./src/models/Transport');
 const Review = require('./src/models/Review');
 const OwnerProfile = require('./src/models/OwnerProfile');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -20,8 +21,9 @@ const packages = [
         itinerary: "Day 1: Arrival & Check-in, Botanical Garden.\nDay 2: Pykara Lake & Shooting Spot.\nDay 3: Tea Museum & Departure.",
         inclusions: "Accommodation in 3 Star Hotel\nBreakfast & Dinner\nPrivate Cab for Sightseeing\nHoneymoon Cake",
         exclusions: "Lunch\nEntry Fees\nPersonal Expenses",
-        images: ["images/ooty.jpg"],
-        offer: { text: "Early Bird", percentage: 10 }
+        images: ["/images/ooty.jpg"],
+        offerText: "Early Bird",
+        offerPercent: 10
     },
     {
         title: "Kodaikanal Family Escape",
@@ -34,8 +36,9 @@ const packages = [
         itinerary: "Day 1: Lake Boating & Bryant Park.\nDay 2: Pillar Rocks & Guna Caves.\nDay 3: Coaker's Walk & Shopping.",
         inclusions: "Family Suite Stay\nBreakfast\nSightseeing by Innova",
         exclusions: "Lunch & Dinner\nBoating Charges",
-        images: ["images/sheep.jpg"],
-        offer: { text: "Family Deal", percentage: 5 }
+        images: ["/images/sheep.jpg"],
+        offerText: "Family Deal",
+        offerPercent: 5
     },
     {
         title: "Misty Munnar Retreat",
@@ -48,7 +51,7 @@ const packages = [
         itinerary: "Day 1: Cheeyappara Waterfalls.\nDay 2: Eravikulam National Park.\nDay 3: Mattupetty Dam.\nDay 4: Tea Museum.",
         inclusions: "Resort Stay\nAll Meals\nJeep Safari",
         exclusions: "Travel to Munnar",
-        images: ["images/elephant.jpg"]
+        images: ["/images/elephant.jpg"]
     },
     {
         title: "Valparai Nature Trek",
@@ -61,7 +64,7 @@ const packages = [
         itinerary: "Day 1: Aliyar Dam & Monkey Falls.\nDay 2: Sholayar Dam & Viewpoints.",
         inclusions: "Cottage Stay\ncampfire\nGuide",
         exclusions: "Food",
-        images: ["images/valparai.jpg"]
+        images: ["/images/valparai.jpg"]
     }
 ];
 
@@ -88,26 +91,25 @@ const transports = [
 
 const reviews = [
     {
-        name: "Suresh Kumar",
+        customerName: "Suresh Kumar",
         rating: 5,
         comment: "Excellent service by Aaliya Trip Planners. The driver was very professional and the hotel in Ooty was top notch.",
         customerPhoto: "https://randomuser.me/api/portraits/men/32.jpg"
     },
     {
-        name: "Priya & Raj",
+        customerName: "Priya & Raj",
         rating: 5,
         comment: "We had a wonderful honeymoon in Kodaikanal. Thanks for the candle light dinner surprise!",
         customerPhoto: "https://randomuser.me/api/portraits/women/44.jpg"
     },
     {
-        name: "Anita Desai",
+        customerName: "Anita Desai",
         rating: 4,
         comment: "Good trip, value for money. The van was clean and on time.",
         customerPhoto: "https://randomuser.me/api/portraits/women/68.jpg"
     }
 ];
 
-const fs = require('fs');
 const log = (msg) => {
     console.log(msg);
     fs.appendFileSync('seed_progress.txt', msg + '\n');
@@ -116,14 +118,14 @@ const log = (msg) => {
 const seedData = async () => {
     fs.writeFileSync('seed_progress.txt', 'Script started...\n');
     try {
-        log(`Connecting to DB... URI: ${process.env.MONGO_URI ? 'YYYY' : 'NNNN'}`);
+        log(`Connecting to DB...`);
         await connectDB();
         log("DB Connected. Clearing old data...");
 
         await Package.deleteMany({});
         await Transport.deleteMany({});
         await Review.deleteMany({});
-        await OwnerProfile.deleteMany({}); // Optional, can update instead
+        await OwnerProfile.deleteMany({});
 
         log("Seeding Packages...");
         await Package.insertMany(packages);
@@ -137,7 +139,7 @@ const seedData = async () => {
         log("Seeding Owner Profile...");
         await OwnerProfile.create({
             name: "Unknown",
-            photo: "images/logo.png",
+            photo: "/images/logo.png",
             phone: "+91 85266 30786",
             instagram: "https://www.instagram.com/aaliya_trip_planners",
             description: "Travel Consultant / Founder of Aaliya Trip Planners"
