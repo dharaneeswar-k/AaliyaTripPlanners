@@ -1,13 +1,18 @@
 const Package = require('../models/Package');
 const Transport = require('../models/Transport');
-const Review = require('../models/Review');
+const Gallery = require('../models/Gallery');
 const OwnerProfile = require('../models/OwnerProfile');
 
 const getPublicData = async (req, res) => {
     try {
         const packages = await Package.find({ isActive: true });
         const transports = await Transport.find({ isActive: true });
-        const reviews = await Review.find({ isVisible: true });
+        const gallery = await Gallery.find().sort({ createdAt: -1 });
+        const safeGallery = gallery.map(item => {
+            const obj = item.toObject();
+            if (!obj.media) obj.media = [];
+            return obj;
+        });
 
         const ownerProfile = await OwnerProfile.findOne() || {
             name: "Unknown",
@@ -20,7 +25,7 @@ const getPublicData = async (req, res) => {
         res.json({
             packages,
             transports,
-            reviews,
+            gallery: safeGallery,
             ownerProfile
         });
     } catch (error) {

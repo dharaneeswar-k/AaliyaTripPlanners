@@ -1,5 +1,6 @@
 const Package = require('../models/Package');
 const Transport = require('../models/Transport');
+const Gallery = require('../models/Gallery');
 const Review = require('../models/Review');
 const OwnerProfile = require('../models/OwnerProfile');
 const Admin = require('../models/Admin');
@@ -151,18 +152,64 @@ const getDashboardData = async (req, res) => {
     try {
         const packages = await Package.find({}).sort({ createdAt: -1 });
         const transports = await Transport.find({}).sort({ createdAt: -1 });
-        const reviews = await Review.find({}).sort({ createdAt: -1 });
+        const gallery = await Gallery.find({}).sort({ createdAt: -1 });
+        const safeGallery = gallery.map(item => {
+            const obj = item.toObject();
+            if (!obj.media) obj.media = [];
+            return obj;
+        });
         const ownerProfile = await OwnerProfile.findOne();
 
         res.json({
             packages,
             transports,
-            reviews,
+            gallery: safeGallery,
             ownerProfile
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const addGalleryItem = async (req, res) => {
+    try {
+        const { media, destination, description, customerName } = req.body;
+
+        if (!destination) {
+            return res.status(400).json({ message: 'Destination is required' });
+        }
+
+        if (!media || !Array.isArray(media) || media.length === 0) {
+            return res.status(400).json({ message: 'At least one media item is required' });
+        }
+
+        const newItem = new Gallery({
+            media,
+            destination,
+            description,
+            customerName
+        });
+
+        await newItem.save();
+        res.status(201).json(newItem);
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const deleteGalleryItem = async (req, res) => {
+    try {
+        const item = await Gallery.findById(req.params.id);
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+        await item.deleteOne();
+        res.json({ message: 'Gallery item removed' });
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -173,5 +220,6 @@ module.exports = {
     updateOwnerProfile,
     applyOffer,
     getAdmins, deleteAdmin,
-    getDashboardData
+    getDashboardData,
+    addGalleryItem, deleteGalleryItem
 };

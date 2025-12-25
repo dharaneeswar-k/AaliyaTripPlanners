@@ -21,6 +21,7 @@ app.use("/api/auth", require("./src/routes/authRoutes"));
 app.use("/api/admin", require("./src/routes/adminRoutes"));
 app.use("/api/public", require("./src/routes/publicRoutes"));
 app.use("/api/upload", require("./src/routes/uploadRoutes"));
+app.use("/api/gallery", require("./src/routes/galleryRoutes"));
 
 app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));

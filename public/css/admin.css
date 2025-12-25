@@ -79,8 +79,8 @@ ul {
 }
 
 .admin-wrapper {
-    display: flex;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .sidebar {
@@ -619,6 +619,7 @@ ul {
 }
 
 @media screen and (max-width: 768px) {
+
     table,
     thead,
     tbody,

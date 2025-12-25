@@ -14,36 +14,8 @@
     <meta property="og:image" content="https://placehold.co/1200x630/0c4e5a/ffffff?text=Aaliya+Trips">
     <title>Aaliya Trip Planners | Best Travel Agency for Custom Tours</title>
 
-    <div class="modal fade" id="reviewDetailsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                <div class="modal-header border-0 bg-primary text-white p-4">
-                    <div class="d-flex align-items-center">
-                        <img id="modalReviewImage" src="" alt="Customer"
-                            class="rounded-circle border border-2 border-white me-3"
-                            style="width: 60px; height: 60px; object-fit: cover;">
-                        <div>
-                            <h5 class="modal-title fw-bold mb-0" id="modalReviewName">Customer Name</h5>
-                            <div class="text-warning small" id="modalReviewRating">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                                    class="fas fa-star"></i><i class="fas fa-star"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white align-self-start" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <i class="fas fa-quote-left text-primary opacity-25 display-4 mb-3"></i>
-                    <p class="text-muted fs-5" id="modalReviewComment" style="line-height: 1.8;">Review content goes
-                        here...</p>
-                </div>
-                <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-secondary w-100 rounded-pill py-2"
-                        data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
+    </div>
+    </div>
     </div>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -68,7 +40,9 @@
                     <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#packages">Packages</a></li>
                     <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                 </ul>
                 <a href="#packages" class="btn btn-outline-light ms-3 rounded-pill px-4 shadow-sm hover-lift">Start
@@ -274,13 +248,31 @@
         </div>
     </section>
 
-    <section id="reviews" class="py-5">
-        <div class="container text-center">
-            <h2 class="fw-bold mb-5">What Our Customers Say</h2>
+    <section id="gallery" class="py-5 bg-white position-relative">
+        <div class="container-fluid px-lg-5">
+            <div class="text-center mb-5">
+                <h5 class="text-primary fw-bold text-uppercase tracking-wider">Our Happy Travelers</h5>
+                <h2 class="display-5 fw-bold mb-3">Captured Moments</h2>
+                <p class="text-muted w-75 mx-auto">Real stories from real journeys. Explore the world through their
+                    eyes.</p>
+            </div>
 
-            <div class="swiper reviewSwiper">
-                <div class="swiper-wrapper" id="reviews-container"></div>
-                <div class="swiper-pagination"></div>
+            <!-- Desktop Grid View (Hidden on Mobile) -->
+            <div class="gallery-mosaic-grid d-none d-md-grid" id="gallery-desktop-grid">
+                <!-- Items injected here -->
+            </div>
+
+            <!-- Mobile Carousel View (Hidden on Desktop) -->
+            <div class="swiper gallery-mobile-swiper d-md-none" id="gallery-mobile-swiper">
+                <div class="swiper-wrapper" id="gallery-mobile-wrapper">
+                    <!-- Items injected here -->
+                </div>
+                <div class="swiper-pagination position-relative mt-4"></div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="#packages" class="btn btn-outline-primary rounded-pill px-5 py-3 fw-bold">Plan Your Own
+                    Trip</a>
             </div>
         </div>
     </section>
@@ -476,6 +468,24 @@
                     <button type="button" class="btn btn-primary rounded-pill px-5 w-100"
                         data-bs-dismiss="modal">Awesome!</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Lightbox Modal -->
+    <div id="galleryLightbox" class="lightbox-overlay" style="display: none;">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <button class="lightbox-nav prev" onclick="prevGalleryItem()"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav next" onclick="nextGalleryItem()"><i class="fas fa-chevron-right"></i></button>
+
+        <div class="lightbox-content">
+            <div class="lightbox-media-container" id="lightbox-media-wrapper">
+                <!-- Media injected here -->
+            </div>
+            <div class="lightbox-details">
+                <h3 id="lightbox-destination">Destination</h3>
+                <p class="small text-white-50 mb-2" id="lightbox-customer">Customer</p>
+                <p id="lightbox-description">Description</p>
             </div>
         </div>
     </div>

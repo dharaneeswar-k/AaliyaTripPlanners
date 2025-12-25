@@ -12,6 +12,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.css">
     <link rel="stylesheet" href="../css/admin.css">
+    <style>
+        .hover-lift {
+            transition: transform 0.2s;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+        }
+
+        .bg-gradient-dark-bottom {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        }
+
+        .drop-shadow {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        .object-fit-cover {
+            object-fit: cover;
+        }
+
+        .upload-area {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .upload-area:hover {
+            background-color: #e9ecef !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,9 +75,9 @@
                     <i class="fas fa-shuttle-van"></i> <span>Transports</span>
                     <span class="nav-badge" id="stats-transports">0</span>
                 </a>
-                <a href="#" class="nav-link" onclick="showTab('reviews', event)">
-                    <i class="fas fa-star"></i> <span>Reviews</span>
-                    <span class="nav-badge" id="stats-reviews">0</span>
+                <a href="#" class="nav-link" onclick="showTab('gallery', event)">
+                    <i class="fas fa-images"></i> <span>Gallery</span>
+                    <span class="nav-badge" id="stats-gallery">0</span>
                 </a>
 
                 <div class="menu-label mt-4">Settings</div>
@@ -120,8 +150,8 @@
                             <div class="stat-header">
                                 <div class="stat-icon orange"><i class="fas fa-star"></i></div>
                             </div>
-                            <div class="stat-value" id="dash-review-count">0</div>
-                            <div class="stat-label">Total Reviews</div>
+                            <div class="stat-value" id="dash-gallery-count">0</div>
+                            <div class="stat-label">Gallery Items</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -298,17 +328,28 @@
                     <div class="row g-4" id="transports-grid"></div>
                 </div>
 
-                <div id="tab-reviews" class="tab-content" style="display: none;">
+                <div id="tab-gallery" class="tab-content" style="display: none;">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h2 class="page-title">Reviews</h2>
-                            <p class="page-subtitle">What customers are saying</p>
+                            <h2 class="page-title">Gallery Management</h2>
+                            <p class="page-subtitle">Curate your customer memories and trip highlights.</p>
                         </div>
-                        <button class="btn btn-primary-custom" onclick="openReviewModal()">
-                            <i class="fas fa-plus me-2"></i> Add Review
+                        <button class="btn btn-primary-custom shadow-sm" onclick="openNewGalleryModal()">
+                            <i class="fas fa-plus-circle me-2"></i> Add Memory
                         </button>
                     </div>
-                    <div class="row g-4" id="reviews-grid"></div>
+
+                    <!-- Clean Grid Layout -->
+                    <div class="row g-4" id="gallery-grid-container">
+                        <!-- Items will be injected here via JS -->
+                    </div>
+
+                    <!-- Empty State Placeholder (hidden by default) -->
+                    <div id="gallery-empty-state" class="text-center py-5 d-none">
+                        <div class="mb-3 text-muted opacity-50"><i class="fas fa-images fa-4x"></i></div>
+                        <h4 class="fw-bold text-secondary">No Memories Yet</h4>
+                        <p class="text-muted">Start by adding photos or videos from your trips.</p>
+                    </div>
                 </div>
 
                 <div id="tab-profile" class="tab-content" style="display: none;">
@@ -534,40 +575,67 @@
         </div>
     </div>
 
-    <!-- Review Modal -->
-    <div class="modal fade" id="reviewModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Add Review</h5>
+    <!-- New Gallery Modal -->
+    <div class="modal fade" id="newGalleryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Add New Memory</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="review-form">
+                <div class="modal-body p-4">
+                    <form id="new-gallery-form">
                         <div class="mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control" name="customerName" required>
+                            <label class="form-label fw-bold small text-uppercase text-muted">Destination /
+                                Title</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i
+                                        class="fas fa-map-marker-alt text-danger"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0 bg-light" name="destination"
+                                    placeholder="e.g. Ooty Family Trip" required>
+                            </div>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Rating</label>
-                            <select class="form-select" name="rating">
-                                <option value="5">5 Stars</option>
-                                <option value="4">4 Stars</option>
-                                <option value="3">3 Stars</option>
-                            </select>
+                            <label class="form-label fw-bold small text-uppercase text-muted">Customer Name
+                                (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i
+                                        class="fas fa-user text-primary"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0 bg-light" name="customerName"
+                                    placeholder="e.g. Rahul & Family">
+                            </div>
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label">Comment</label>
-                            <textarea class="form-control" name="comment" rows="3" required></textarea>
+                            <label class="form-label fw-bold small text-uppercase text-muted">Description
+                                (Optional)</label>
+                            <textarea class="form-control bg-light" name="description" rows="2"
+                                placeholder="Brief note about the trip..."></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Photo</label>
-                            <input type="file" class="form-control" accept="image/*"
-                                onchange="uploadImage(this, 'rev-img', 'rev-img-file-status')">
-                            <input type="hidden" name="customerPhoto" id="rev-img">
-                            <small id="rev-img-file-status"></small>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Upload Media</label>
+                            <div class="upload-area p-4 border-2 border-dashed rounded-3 text-center bg-light"
+                                id="upload-drop-area" onclick="document.getElementById('gallery-files-input').click()">
+                                <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                                <p class="mb-0 small fw-bold text-dark">Click to select files</p>
+                                <p class="text-muted small mb-0">Images or Short Videos (Max 3)</p>
+                            </div>
+                            <input type="file" class="d-none" id="gallery-files-input" accept="image/*,video/*" multiple
+                                onchange="handleNewGalleryFiles(this)">
+
+                            <!-- File Previews Container -->
+                            <div id="gallery-previews" class="mt-3 d-flex gap-2 flex-wrap"></div>
+
+                            <!-- Hidden input to store uploaded URLs -->
+                            <input type="hidden" id="gallery-media-data" name="mediaData">
                         </div>
-                        <button type="submit" class="btn btn-primary-custom w-100">Add Review</button>
+
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-bold shadow-sm"
+                            id="btn-save-gallery">
+                            <i class="fas fa-save me-2"></i> Save to Gallery
+                        </button>
                     </form>
                 </div>
             </div>
@@ -693,7 +761,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
-    <script src="../js/admin.js?v=2"></script>
+    <script src="../js/admin.js?v=3"></script>
 </body>
 
 </html>

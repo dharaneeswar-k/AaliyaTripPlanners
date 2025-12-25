@@ -8,7 +8,8 @@ const {
     updateOwnerProfile,
     applyOffer,
     getAdmins, deleteAdmin,
-    getDashboardData
+    getDashboardData,
+    addGalleryItem, deleteGalleryItem
 } = require('../controllers/adminController');
 const { createAdmin } = require('../controllers/authController');
 const { getEnquiries, updateEnquiryStatus } = require('../controllers/enquiryController');
@@ -33,6 +34,9 @@ router.post('/reviews', protect, createReview);
 router.delete('/reviews/:id', protect, deleteReview);
 
 router.put('/profile', protect, updateOwnerProfile);
+
+router.post('/gallery', protect, addGalleryItem);
+router.delete('/gallery/:id', protect, deleteGalleryItem);
 
 router.get('/dashboard-data', protect, getDashboardData);
 

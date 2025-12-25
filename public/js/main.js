@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.siteData = data;
             renderPackages(data.packages);
             renderTransports(data.transports);
-            renderReviews(data.reviews);
+            renderGallery(data.gallery);
             renderOwnerProfile(data.ownerProfile);
         } else {
             console.error('Failed to fetch public data:', response.status, response.statusText);
@@ -245,73 +245,218 @@ function renderTransports(transports) {
     });
 }
 
-function renderReviews(reviews) {
-    const container = document.getElementById('reviews-container');
-    if (!container) return;
-    container.innerHTML = '';
+/* Gallery & Lightbox Logic */
+let currentGalleryItems = [];
+let currentLightboxIndex = 0;
+let currentItemMediaIndex = 0; // Track which media in the current item is showing
 
-    if (reviews.length === 0) {
-        container.innerHTML = '<div class="swiper-slide"><div class="review-card"><p class="text-center text-muted">No reviews yet.</p></div></div>';
+// Global Gallery Swiper Instance
+let gallerySwiper = null;
+
+function renderGallery(galleryItems) {
+    const desktopGrid = document.getElementById('gallery-desktop-grid');
+    const mobileWrapper = document.getElementById('gallery-mobile-wrapper');
+
+    // Clear both
+    if (desktopGrid) desktopGrid.innerHTML = '';
+    if (mobileWrapper) mobileWrapper.innerHTML = '';
+
+    if (!galleryItems || galleryItems.length === 0) {
+        if (desktopGrid) desktopGrid.innerHTML = '<p class="text-center text-muted w-100">No moments shared yet.</p>';
         return;
     }
 
-    reviews.forEach(review => {
-        const stars = '<i class="fas fa-star"></i>'.repeat(Math.round(review.rating));
-        const name = review.customerName || 'Happy Customer';
-        const photo = review.customerPhoto ? review.customerPhoto : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+    currentGalleryItems = galleryItems;
 
-        const slide = document.createElement("div");
-        slide.className = "swiper-slide";
-        slide.innerHTML = `
-          <div class="review-card">
-            <i class="fas fa-quote-left quote-icon"></i>
+    galleryItems.forEach((item, index) => {
+        // Normalize data
+        let mediaList = item.media || [];
+        if (item.mediaUrl) {
+            mediaList = [{ url: item.mediaUrl, type: item.mediaType }];
+        }
+        item.media = mediaList; // Update in memory
 
-            <p class="review-content">
-              ${review.comment || 'No comment provided.'}
-            </p>
+        if (mediaList.length === 0) return;
 
-            <div class="review-footer">
-              <img src="${photo}" class="reviewer-img" alt="${name}" />
-              <div class="reviewer-info">
-                <h5>${name}</h5>
-                <div class="stars">
-                  ${stars}
+        const cover = mediaList[0];
+        const count = mediaList.length;
+
+        // Content Generation
+        let mediaContent = '';
+        if (cover.type === 'video' || (cover.url && cover.url.endsWith('.mp4'))) {
+            mediaContent = `
+                <video src="${cover.url}" type="video/mp4" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
+                <div class="video-badge"><i class="fas fa-play fa-sm"></i></div>
+             `;
+        } else {
+            mediaContent = `<img src="${cover.url}" alt="${item.destination}" loading="lazy">`;
+        }
+
+        let badgeHtml = '';
+        if (count > 1) {
+            badgeHtml = `<div class="gallery-count-badge">+${count}</div>`;
+        }
+
+        const cardInner = `
+            ${mediaContent}
+            ${badgeHtml}
+            <div class="gallery-overlay">
+                <div class="gallery-info">
+                    <h5>${item.destination}</h5>
+                    <p>${item.customerName || 'Happy Traveler'}</p>
                 </div>
-              </div>
             </div>
-          </div>
         `;
-        container.appendChild(slide);
+
+        // Desktop Grid Item
+        if (desktopGrid) {
+            let gridClass = '';
+            // Mosaic Pattern: Cycle of 10 items
+            // 0: Large (2x2)
+            // 5: Wide (2 col)
+            // Others: Standard (1x1)
+            const patternIdx = index % 10;
+            if (patternIdx === 0) gridClass = 'g-span-2';
+            else if (patternIdx === 5) gridClass = 'g-span-wide';
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `gallery-item ${gridClass}`;
+            itemDiv.onclick = () => openLightbox(index);
+            itemDiv.innerHTML = cardInner;
+            desktopGrid.appendChild(itemDiv);
+        }
+
+        // Mobile Swiper Slide
+        if (mobileWrapper) {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.onclick = () => openLightbox(index);
+            slide.innerHTML = cardInner; // Re-use inner HTML
+            mobileWrapper.appendChild(slide);
+        }
     });
 
-    new Swiper(".reviewSwiper", {
-        loop: true,
-        grabCursor: true,
-        centeredSlides: false,
-        autoplay: {
-            delay: 4000,
-            disableOnInteraction: false,
-        },
-        pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-        },
-        breakpoints: {
-            0: {
-                slidesPerView: 1,
-                spaceBetween: 16,
-            },
-            768: {
-                slidesPerView: 2,
-                spaceBetween: 20,
-            },
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 24,
-            },
-        },
-    });
+    // Initialize/Refresh Swiper
+    initGallerySwiper();
 }
+
+function initGallerySwiper() {
+    if (gallerySwiper) {
+        gallerySwiper.destroy(true, true);
+    }
+
+    const swiperEl = document.querySelector('.gallery-mobile-swiper');
+    if (swiperEl) {
+        gallerySwiper = new Swiper(swiperEl, {
+            slidesPerView: 1.2, // Peek effect
+            spaceBetween: 16,
+            centeredSlides: true,
+            loop: true,
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+        });
+    }
+}
+
+window.openLightbox = (index) => {
+    currentLightboxIndex = index;
+    currentItemMediaIndex = 0; // Reset media index
+    updateLightboxContent();
+    document.getElementById('galleryLightbox').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeLightbox = () => {
+    document.getElementById('galleryLightbox').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    const wrapper = document.getElementById('lightbox-media-wrapper');
+    wrapper.innerHTML = '';
+};
+
+window.prevGalleryItem = (e) => {
+    if (e) e.stopPropagation();
+    currentLightboxIndex = (currentLightboxIndex > 0) ? currentLightboxIndex - 1 : currentGalleryItems.length - 1;
+    currentItemMediaIndex = 0;
+    updateLightboxContent();
+};
+
+window.nextGalleryItem = (e) => {
+    if (e) e.stopPropagation();
+    currentLightboxIndex = (currentLightboxIndex < currentGalleryItems.length - 1) ? currentLightboxIndex + 1 : 0;
+    currentItemMediaIndex = 0;
+    updateLightboxContent();
+};
+
+window.nextMediaInItem = (e) => {
+    if (e) e.stopPropagation();
+    const item = currentGalleryItems[currentLightboxIndex];
+    if (item.media && item.media.length > 1) {
+        currentItemMediaIndex = (currentItemMediaIndex + 1) % item.media.length;
+        updateLightboxContent();
+    }
+}
+
+window.prevMediaInItem = (e) => {
+    if (e) e.stopPropagation();
+    const item = currentGalleryItems[currentLightboxIndex];
+    if (item.media && item.media.length > 1) {
+        currentItemMediaIndex = (currentItemMediaIndex - 1 + item.media.length) % item.media.length;
+        updateLightboxContent();
+    }
+}
+
+function updateLightboxContent() {
+    const item = currentGalleryItems[currentLightboxIndex];
+    const wrapper = document.getElementById('lightbox-media-wrapper');
+
+    wrapper.innerHTML = '';
+
+    const mediaList = item.media || [];
+    if (mediaList.length === 0) return;
+
+    const currentMedia = mediaList[currentItemMediaIndex];
+
+    if (currentMedia.type === 'video' || (currentMedia.url && currentMedia.url.endsWith('.mp4'))) {
+        const video = document.createElement('video');
+        video.src = currentMedia.url;
+        video.controls = true;
+        video.autoplay = true;
+        video.className = 'fade-in-up';
+        wrapper.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = currentMedia.url;
+        img.className = 'fade-in-up';
+        wrapper.appendChild(img);
+    }
+
+    // Add internal navigation if multiple
+    if (mediaList.length > 1) {
+        const controls = document.createElement('div');
+        controls.className = 'lightbox-internal-controls';
+        controls.innerHTML = `
+            <button class="internal-nav prev" onclick="prevMediaInItem(event)"><i class="fas fa-chevron-left"></i></button>
+            <span class="media-counter">${currentItemMediaIndex + 1} / ${mediaList.length}</span>
+            <button class="internal-nav next" onclick="nextMediaInItem(event)"><i class="fas fa-chevron-right"></i></button>
+        `;
+        wrapper.appendChild(controls);
+    }
+
+    document.getElementById('lightbox-destination').innerText = item.destination;
+    document.getElementById('lightbox-customer').innerText = item.customerName || 'Happy Traveler';
+    document.getElementById('lightbox-description').innerText = item.description || '';
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('galleryLightbox').style.display === 'flex') {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') prevGalleryItem();
+        if (e.key === 'ArrowRight') nextGalleryItem();
+    }
+});
 
 function renderOwnerProfile(profile) {
     if (!profile) return;

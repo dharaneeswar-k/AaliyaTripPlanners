@@ -1,9 +1,10 @@
 let allPackages = [];
 let allTransports = [];
-let allReviews = [];
+let allGallery = [];
 let allEnquiries = [];
 let ownerProfile = {};
 let charts = {};
+let uploadedGalleryMedia = []; // Store { url, type } objects
 
 const TOKEN_KEY = 'adminToken';
 
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.pkgModal = new bootstrap.Modal(document.getElementById('packageModal'));
     window.transModal = new bootstrap.Modal(document.getElementById('transportModal'));
-    window.revModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    window.galleryModal = new bootstrap.Modal(document.getElementById('galleryModal'));
     window.confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
     window.enqModal = new bootstrap.Modal(document.getElementById('enquiryModal'));
     window.myProfModal = new bootstrap.Modal(document.getElementById('myProfileModal'));
@@ -106,12 +107,12 @@ async function fetchDashboardData() {
 
         allPackages = data.packages || [];
         allTransports = data.transports || [];
-        allReviews = data.reviews || [];
+        allGallery = data.gallery || [];
         ownerProfile = data.ownerProfile || {};
 
         renderPackages();
         renderTransports();
-        renderReviews();
+        renderGallery();
         renderProfile();
         updateDashboardStats();
     } catch (err) {
@@ -143,8 +144,8 @@ function updateDashboardStats() {
     const transCount = document.getElementById('dash-trans-count');
     if (transCount) transCount.innerText = allTransports.length;
 
-    const reviewCountEl = document.getElementById('dash-review-count');
-    if (reviewCountEl) reviewCountEl.innerText = allReviews.length;
+    const galCountEl = document.getElementById('dash-gallery-count');
+    if (galCountEl) galCountEl.innerText = allGallery.length;
 
     const badgePkg = document.getElementById('stats-packages');
     if (badgePkg) badgePkg.innerText = allPackages.length;
@@ -155,8 +156,8 @@ function updateDashboardStats() {
     const badgeTrans = document.getElementById('stats-transports');
     if (badgeTrans) badgeTrans.innerText = allTransports.length;
 
-    const badgeReviews = document.getElementById('stats-reviews');
-    if (badgeReviews) badgeReviews.innerText = allReviews.length;
+    const badgeGal = document.getElementById('stats-gallery');
+    if (badgeGal) badgeGal.innerText = allGallery.length;
 }
 
 function processAnalyticsData() {
@@ -335,6 +336,9 @@ function showToast(message, type = 'success') {
 }
 
 function showConfirmation(message, onConfirm) {
+    const modalEl = document.getElementById('confirmationModal');
+    if (!modalEl) return;
+
     document.getElementById('confirm-msg').innerText = message;
     const confirmBtn = document.getElementById('confirm-btn-action');
 
@@ -344,10 +348,15 @@ function showConfirmation(message, onConfirm) {
 
     newBtn.addEventListener('click', () => {
         onConfirm();
-        window.confirmModal.hide();
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
     });
 
-    window.confirmModal.show();
+    let modal = bootstrap.Modal.getInstance(modalEl);
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
+    modal.show();
 }
 
 function uploadImage(input, targetId, statusId) {
@@ -356,8 +365,20 @@ function uploadImage(input, targetId, statusId) {
         const reader = new FileReader();
         const statusEl = document.getElementById(statusId);
 
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit matching backend
-            showToast('File is too large. Max 5MB.', 'error');
+        // Auto-detect type if this is the gallery upload
+        if (targetId === 'gal-media') {
+            const typeInput = document.getElementById('gal-type');
+            if (typeInput) {
+                if (file.type.startsWith('video/')) {
+                    typeInput.value = 'video';
+                } else {
+                    typeInput.value = 'image';
+                }
+            }
+        }
+
+        if (file.size > 50 * 1024 * 1024) { // 50MB limit for videos
+            showToast('File is too large. Max 50MB.', 'error');
             input.value = '';
             return;
         }
@@ -396,7 +417,7 @@ function uploadImage(input, targetId, statusId) {
             })
             .then(data => {
                 document.getElementById(targetId).value = data.path; // Set the Cloudinary URL
-                statusEl.innerText = 'Image uploaded: ' + file.name;
+                statusEl.innerText = 'Media uploaded: ' + file.name;
                 statusEl.className = 'text-success small';
 
                 // If there is a preview image element associated, update it?
@@ -893,75 +914,227 @@ function deleteTransport(id) {
     });
 }
 
-function renderReviews() {
-    const grid = document.getElementById('reviews-grid');
+// ==========================================
+// NEW GALLERY IMPLEMENTATION
+// ==========================================
+
+let newUploadedMedia = []; // Stores { url, type }
+
+function renderGallery() {
+    const grid = document.getElementById('gallery-grid-container');
+    const emptyState = document.getElementById('gallery-empty-state');
+
     if (!grid) return;
     grid.innerHTML = '';
 
-    allReviews.forEach(rev => {
-        const stars = Array(5).fill('<i class="far fa-star text-warning"></i>');
-        for (let i = 0; i < rev.rating; i++) stars[i] = '<i class="fas fa-star text-warning"></i>';
+    if (!allGallery || allGallery.length === 0) {
+        if (emptyState) emptyState.classList.remove('d-none');
+        return;
+    }
 
+    if (emptyState) emptyState.classList.add('d-none');
+
+    allGallery.forEach(item => {
         const col = document.createElement('div');
-        col.className = 'col-md-6 col-lg-4';
+        col.className = 'col-sm-6 col-lg-4 col-xl-3';
+
+        // Robust media handling
+        let mediaList = item.media || [];
+        // Legacy fallback support for older items if any remain
+        if (mediaList.length === 0 && item.mediaUrl) {
+            mediaList = [{ url: item.mediaUrl, type: item.mediaType || 'image' }];
+        }
+
+        const count = mediaList.length;
+        const firstMedia = count > 0 ? mediaList[0] : null;
+
+        let mediaPreview = '';
+        if (firstMedia) {
+            if (firstMedia.type === 'video' || (firstMedia.url && firstMedia.url.endsWith('.mp4'))) {
+                mediaPreview = `
+                    <video src="${firstMedia.url}" class="card-img-top object-fit-cover" style="height: 220px;" muted loop onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>
+                    <div class="position-absolute top-0 end-0 p-2"><span class="badge bg-black bg-opacity-75"><i class="fas fa-video me-1"></i> Video</span></div>
+                `;
+            } else {
+                mediaPreview = `<img src="${firstMedia.url}" class="card-img-top object-fit-cover" style="height: 220px;" alt="${item.destination}" loading="lazy">`;
+            }
+        } else {
+            mediaPreview = '<div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height: 220px;"><i class="fas fa-image text-muted fa-2x"></i></div>';
+        }
+
+        // Multi-badge
+        let multiBadge = '';
+        if (count > 1) {
+            multiBadge = `<div class="position-absolute bottom-0 start-0 p-2 w-100 bg-gradient-dark-bottom"><span class="badge bg-white text-dark shadow-sm"><i class="fas fa-layer-group me-1"></i> +${count - 1} more</span></div>`;
+        }
+
         col.innerHTML = `
-            <div class="card-premium h-100 p-3">
-                <div class="d-flex justify-content-between mb-3">
-                    <div class="d-flex align-items-center">
-                        <img src="${rev.customerPhoto || 'https://placehold.co/50'}" class="rounded-circle me-3" width="48" height="48" style="object-fit:cover">
-                        <div>
-                            <h6 class="fw-bold mb-0">${rev.customerName}</h6>
-                            <div class="small">${stars.join('')}</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-icon-sm text-danger" onclick="deleteReview('${rev._id}')"><i class="fas fa-trash"></i></button>
+            <div class="card-premium h-100 p-0 overflow-hidden border-0 shadow-sm hover-lift">
+                <div class="position-relative">
+                    ${mediaPreview}
+                    ${multiBadge}
                 </div>
-                <p class="text-muted small fst-italic">"${rev.comment}"</p>
+                <div class="card-body p-3">
+                    <h5 class="fw-bold mb-1 text-dark text-truncate">${item.destination || 'Untitled'}</h5>
+                    <p class="text-muted small mb-2"><i class="fas fa-user-circle me-1 text-primary"></i> ${item.customerName || 'Happy Customer'}</p>
+                    <p class="small text-secondary text-truncate mb-0">${item.description || 'No description'}</p>
+                </div>
+                <div class="card-footer bg-white border-top-0 p-3 pt-0 text-end">
+                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteGalleryItem('${item._id}')">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                     </button>
+                </div>
             </div>
         `;
         grid.appendChild(col);
     });
 }
 
-function openReviewModal() {
-    document.getElementById('review-form').reset();
-    window.revModal.show();
+function openNewGalleryModal() {
+    const modalEl = document.getElementById('newGalleryModal');
+    if (!modalEl) return;
+
+    // Reset form
+    document.getElementById('new-gallery-form').reset();
+    document.getElementById('gallery-previews').innerHTML = '';
+    document.getElementById('gallery-media-data').value = '';
+
+    newUploadedMedia = [];
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
 }
 
-document.getElementById('review-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const payload = Object.fromEntries(formData.entries());
+async function handleNewGalleryFiles(input) {
+    const files = input.files;
+    const previewContainer = document.getElementById('gallery-previews');
+    const uploadBtn = document.getElementById('btn-save-gallery');
+
+    if (files.length === 0) return;
+
+    // Check total count (existing + new)
+    if (newUploadedMedia.length + files.length > 3) {
+        showToast('Maximum 3 items allowed per gallery entry.', 'error');
+        input.value = '';
+        return;
+    }
+
+    // Disable save button while uploading
+    if (uploadBtn) {
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Uploading...';
+    }
 
     try {
-        const res = await fetch('/api/admin/reviews', {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            // Size Check (50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                showToast(`File ${file.name} is too large (Max 50MB)`, 'error');
+                continue;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Optimistic UI: Show placeholder loading
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'position-relative d-inline-block rounded overflow-hidden border';
+            loadingDiv.style.width = '80px';
+            loadingDiv.style.height = '80px';
+            loadingDiv.innerHTML = '<div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center"><i class="fas fa-spinner fa-spin text-muted"></i></div>';
+            previewContainer.appendChild(loadingDiv);
+
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            if (!res.ok) throw new Error('Upload failed');
+
+            const data = await res.json();
+
+            // Determine type
+            let type = 'image';
+            if (file.type.startsWith('video/')) type = 'video';
+
+            // Add to tracked array
+            newUploadedMedia.push({
+                url: data.path, // Cloudinary URL
+                type: type
+            });
+
+            // Replace placeholder with actual preview
+            loadingDiv.innerHTML = '';
+            if (type === 'video') {
+                loadingDiv.innerHTML = `<video src="${data.path}" class="object-fit-cover w-100 h-100"></video><i class="fas fa-video position-absolute top-50 start-50 translate-middle text-white drop-shadow"></i>`;
+            } else {
+                loadingDiv.innerHTML = `<img src="${data.path}" class="object-fit-cover w-100 h-100">`;
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        showToast('One or more files failed to upload.', 'error');
+    } finally {
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-save me-2"></i> Save to Gallery';
+        }
+        input.value = ''; // Reset input to allow re-selecting same file if needed
+    }
+}
+
+document.getElementById('new-gallery-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (newUploadedMedia.length === 0) {
+        showToast('Please upload at least one image or video.', 'error');
+        return;
+    }
+
+    const formData = new FormData(e.target);
+    const payload = {
+        destination: formData.get('destination'),
+        customerName: formData.get('customerName'),
+        description: formData.get('description'),
+        media: newUploadedMedia
+    };
+
+    try {
+        const res = await fetch('/api/admin/gallery', {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
 
         if (res.ok) {
-            window.revModal.hide();
-            fetchDashboardData();
-            showToast('Review added!', 'success');
+            // Close modal safely
+            const modalEl = document.getElementById('newGalleryModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            fetchDashboardData(); // Refresh grid
+            showToast('Gallery memory added successfully!', 'success');
         } else {
-            showToast('Failed to add review', 'error');
+            const data = await res.json();
+            showToast(data.message || 'Failed to save gallery item', 'error');
         }
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
     }
 });
 
-function deleteReview(id) {
-    showConfirmation('Delete this review?', async () => {
+function deleteGalleryItem(id) {
+    showConfirmation('Are you sure you want to remove this memory?', async () => {
         try {
-            const res = await fetch(`/api/admin/reviews/${id}`, {
+            const res = await fetch(`/api/admin/gallery/${id}`, {
                 method: 'DELETE',
                 headers: getHeaders()
             });
+
             if (res.ok) {
                 fetchDashboardData();
-                showToast('Review deleted!', 'success');
+                showToast('Memory removed successfully.', 'success');
+            } else {
+                showToast('Failed to delete item.', 'error');
             }
         } catch (err) {
             showToast('Error: ' + err.message, 'error');
